@@ -201,10 +201,10 @@ export default function EmpresaCrear({ toast }: { toast: (m: string, t: 'success
                 const hasSubmodulos = submodulosActivosGlobalmente.length > 0;
                 
                 return (
-                  <div key={mod.id} className={`flex flex-col p-4 rounded-xl border transition-colors ${isActive ? 'border-violet-200 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                  <div key={mod.id} className={`flex flex-col p-4 rounded-xl border transition-colors ${isActive ? 'border-orange-200 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                     <div className="flex items-center justify-between gap-4 mb-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 transition-colors ${isActive ? 'bg-violet-50 text-violet-600' : 'bg-slate-100 text-slate-400 grayscale'}`}>{mod.icon || '🧩'}</div>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 transition-colors ${isActive ? 'bg-orange-50 text-orange-500' : 'bg-slate-100 text-slate-400 grayscale'}`}>{mod.icon || '🧩'}</div>
                         <div className="min-w-0">
                           <p className={`font-bold truncate transition-colors ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{mod.nombre}</p>
                           <p className={`text-[11px] mt-0.5 truncate ${!hasSubmodulos ? 'text-amber-500 font-medium' : 'text-slate-400'}`}>
@@ -239,8 +239,8 @@ export default function EmpresaCrear({ toast }: { toast: (m: string, t: 'success
                             const isSubGlobalActive = sub.activo !== false;
                             
                             return (
-                              <div key={sub.id} className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${isSubActive ? 'border-violet-200 bg-violet-50/50' : 'border-slate-100 bg-white'} ${!isSubGlobalActive ? 'opacity-60' : ''}`}>
-                                <span className={`text-sm font-medium ${isSubActive ? 'text-violet-700' : 'text-slate-500'}`}>
+                              <div key={sub.id} className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${isSubActive ? 'border-orange-200 bg-orange-50/50' : 'border-slate-100 bg-white'} ${!isSubGlobalActive ? 'opacity-60' : ''}`}>
+                                <span className={`text-sm font-medium ${isSubActive ? 'text-orange-600' : 'text-slate-500'}`}>
                                   {sub.nombre}
                                   {!isSubGlobalActive && <span className="text-[10px] text-red-500 ml-2">(Inactivo globalmente)</span>}
                                 </span>
@@ -248,7 +248,7 @@ export default function EmpresaCrear({ toast }: { toast: (m: string, t: 'success
                                   type="button"
                                   disabled={!isActive || !isSubGlobalActive}
                                   onClick={() => isActive && isSubGlobalActive && toggleSubmoduleSelection(sub.id, mod.id)}
-                                  className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${!isActive || !isSubGlobalActive ? 'bg-slate-200 cursor-not-allowed' : isSubActive ? 'bg-violet-500 hover:bg-violet-600' : 'bg-slate-300 hover:bg-slate-400'}`}
+                                  className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${!isActive || !isSubGlobalActive ? 'bg-slate-200 cursor-not-allowed' : isSubActive ? 'bg-orange-500 hover:bg-orange-500' : 'bg-slate-300 hover:bg-slate-400'}`}
                                 >
                                   <span
                                     aria-hidden="true"

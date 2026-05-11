@@ -15,6 +15,7 @@ import Usuarios from './pages/usuarios/Usuarios';
 import UsuarioCrear from './pages/usuarios/UsuarioCrear';
 import EmpresaDashboard from './pages/empresas/EmpresaDashboard';
 import EmpresaCrear from './pages/empresas/EmpresaCrear';
+import PanelControl from './pages/panel/PanelControl';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -79,6 +80,7 @@ export default function App() {
         <Route element={user ? <Layout user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard stats={stats} user={user} />} />
+          <Route path="/panel" element={<PanelControl toast={showToast} />} />
           <Route path="/empresas" element={<Empresas toast={showToast} />} />
           <Route path="/empresas/nueva" element={<EmpresaCrear toast={showToast} />} />
           <Route path="/empresas/:id" element={<EmpresaDashboard toast={showToast} />} />

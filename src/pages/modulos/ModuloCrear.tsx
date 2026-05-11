@@ -116,12 +116,12 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
               <div className="p-5 bg-slate-50/50">
                 <div className="space-y-3">
                   {submodulos.map((sub, index) => (
-                    <div key={sub.id} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition-colors focus-within:border-violet-300">
-                      <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-xs shrink-0">
+                    <div key={sub.id} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition-colors focus-within:border-orange-300">
+                      <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center font-bold text-xs shrink-0">
                         {index + 1}
                       </div>
                       <input 
-                        className="input flex-1 border-transparent hover:border-slate-200 focus:border-violet-300 focus:ring-0 shadow-none bg-transparent" 
+                        className="input flex-1 border-transparent hover:border-slate-200 focus:border-orange-300 focus:ring-0 shadow-none bg-transparent" 
                         value={sub.nombre} 
                         onChange={e => updateSubmodulo(sub.id, e.target.value)} 
                         placeholder="Nombre del submódulo..." 
