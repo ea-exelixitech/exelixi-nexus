@@ -13,6 +13,7 @@ import Roles from './pages/roles/Roles';
 import RolCrear from './pages/roles/RolCrear';
 import Usuarios from './pages/usuarios/Usuarios';
 import UsuarioCrear from './pages/usuarios/UsuarioCrear';
+import MiPerfil from './pages/usuarios/MiPerfil.tsx';
 import EmpresaDashboard from './pages/empresas/EmpresaDashboard';
 import EmpresaCrear from './pages/empresas/EmpresaCrear';
 import PanelControl from './pages/panel/PanelControl';
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="/roles/nuevo" element={<RolCrear toast={showToast} />} />
           <Route path="/usuarios" element={<Usuarios toast={showToast} user={user} />} />
           <Route path="/usuarios/nuevo" element={<UsuarioCrear toast={showToast} />} />
+          <Route path="/mi-perfil" element={<MiPerfil toast={showToast} user={user} setUser={setUser} />} />
         </Route>
 
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />

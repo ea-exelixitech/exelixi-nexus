@@ -308,6 +308,16 @@ export default function Layout({ user, onLogout }: { user: any; onLogout: () => 
               </div>
             </div>
           </div>
+          
+          <div className="mt-6 pt-6 flex justify-center gap-3" style={{ borderTop: '1px solid #EAECEF' }}>
+            <Link 
+              to="/mi-perfil" 
+              className="btn-primary"
+              onClick={() => setShowProfileModal(false)}
+            >
+              Editar Perfil
+            </Link>
+          </div>
         </Modal>
       )}
 
