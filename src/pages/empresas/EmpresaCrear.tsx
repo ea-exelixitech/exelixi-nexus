@@ -208,7 +208,7 @@ export default function EmpresaCrear({ toast }: { toast: (m: string, t: 'success
                         <div className="min-w-0">
                           <p className={`font-bold truncate transition-colors ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{mod.nombre}</p>
                           <p className={`text-[11px] mt-0.5 truncate ${!hasSubmodulos ? 'text-amber-500 font-medium' : 'text-slate-400'}`}>
-                            {!hasSubmodulos ? 'Sin submódulos disponibles' : (mod.descripcion || 'Configuración pendiente')}
+                            {!hasSubmodulos ? 'Sin submódulos disponibles' : ''}
                           </p>
                         </div>
                       </div>
