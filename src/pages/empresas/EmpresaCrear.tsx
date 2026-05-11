@@ -11,9 +11,14 @@ const formatRif = (value: string) => {
     val = val.replace(/^[^VEJG]+/, '');
     if (val.length === 0) return '';
   }
-  let formatted = val.charAt(0);
-  if (val.length > 1) formatted += '-' + val.substring(1, 9);
-  if (val.length > 9) formatted += '-' + val.substring(9, 10);
+  
+  const firstChar = val.charAt(0);
+  const rest = val.substring(1).replace(/[^0-9]/g, '');
+  
+  let formatted = firstChar;
+  if (rest.length > 0) formatted += '-' + rest.substring(0, 8);
+  if (rest.length > 8) formatted += '-' + rest.substring(8, 9);
+  
   return formatted;
 };
 
