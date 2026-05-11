@@ -193,7 +193,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                         {(() => {
                           const c = m.submodulos?.length || 0;
                           return (
-                            <div className={`text-sm font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-2 ${c === 0 ? 'bg-amber-50 text-amber-700' : 'bg-violet-50 text-violet-600'}`}>
+                            <div className={`text-sm font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-2 ${c === 0 ? 'bg-amber-50 text-amber-700' : 'bg-orange-50 text-orange-500'}`}>
                               {c === 0 ? 'Sin submódulos' : `${c} submódulo${c !== 1 ? 's' : ''}`}
                             </div>
                           );
@@ -207,7 +207,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                       <td className="td text-center">
                         <div className="flex gap-2 justify-center">
                           <button 
-                            className={`p-2 rounded-lg transition-colors ${editId === m.id ? 'bg-violet-100 text-violet-600' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} 
+                            className={`p-2 rounded-lg transition-colors ${editId === m.id ? 'bg-orange-100 text-orange-500' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} 
                             title="Editar" 
                             onClick={() => editId === m.id ? setEditId(null) : startEdit(m)}
                           >
@@ -358,10 +358,10 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                   
                                   {editSubId === 'new' && subForm.moduloId === m.id && (
                                     <tr>
-                                      <td colSpan={3} className="py-2 px-3 bg-violet-50/50 border-t border-slate-100">
+                                      <td colSpan={3} className="py-2 px-3 bg-orange-50/50 border-t border-slate-100">
                                         <form onSubmit={(e) => guardarSubmodulo(e, null)} className="flex items-center gap-2">
                                           <input 
-                                            className="input text-xs py-1.5 px-2.5 flex-1 border-violet-200 focus:border-violet-500 focus:ring-violet-500" 
+                                            className="input text-xs py-1.5 px-2.5 flex-1 border-orange-200 focus:border-orange-500 focus:ring-orange-500" 
                                             value={subForm.nombre} 
                                             onChange={e => setSubForm(p => ({ ...p, nombre: formatNombre(e.target.value) }))} 
                                             placeholder="Nombre del nuevo submódulo..." 

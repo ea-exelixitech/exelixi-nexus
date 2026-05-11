@@ -9,7 +9,7 @@ export function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${copied ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 hover:bg-violet-100 hover:text-violet-700'}`}>
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${copied ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 hover:bg-orange-100 hover:text-orange-600'}`}>
       {copied ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar</>}
     </button>
   );
@@ -49,13 +49,13 @@ export function Toast({ msg, type, onDismiss }: { msg: string; type: 'success' |
 
 export function StatCard({ label, value, icon, color, sub, onClick }: { label: string; value: number | string; icon: string; color: string; sub?: string; onClick?: () => void }) {
   const colors: Record<string, string> = {
-    violet: 'bg-violet-50 text-violet-600',
+    violet: 'bg-orange-50 text-orange-500',
     emerald: 'bg-emerald-50 text-emerald-600',
     blue: 'bg-blue-50 text-blue-600',
     rose: 'bg-rose-50 text-rose-600',
   };
   return (
-    <div className={`stat-card ${onClick ? 'transition-all duration-200 hover:shadow-md hover:border-violet-200 cursor-pointer' : ''}`} onClick={onClick}>
+    <div className={`stat-card ${onClick ? 'transition-all duration-200 hover:shadow-md hover:border-orange-200 cursor-pointer' : ''}`} onClick={onClick}>
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${colors[color]}`}>{icon}</div>
       <div>
         <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{value ?? 0}</p>

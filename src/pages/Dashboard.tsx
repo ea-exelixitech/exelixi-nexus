@@ -9,9 +9,9 @@ const COLORS = [
   { bg: 'bg-sky-50', text: 'text-sky-600', bar: 'bg-sky-500' },
   { bg: 'bg-purple-50', text: 'text-purple-600', bar: 'bg-purple-500' },
   { bg: 'bg-amber-50', text: 'text-amber-600', bar: 'bg-amber-500' },
-  { bg: 'bg-indigo-50', text: 'text-indigo-600', bar: 'bg-indigo-500' },
+  { bg: 'bg-sky-50', text: 'text-sky-600', bar: 'bg-sky-500' },
   { bg: 'bg-blue-50', text: 'text-blue-600', bar: 'bg-blue-500' },
-  { bg: 'bg-violet-50', text: 'text-violet-600', bar: 'bg-violet-500' },
+  { bg: 'bg-orange-50', text: 'text-orange-500', bar: 'bg-orange-500' },
   { bg: 'bg-fuchsia-50', text: 'text-fuchsia-600', bar: 'bg-fuchsia-500' },
   { bg: 'bg-orange-50', text: 'text-orange-600', bar: 'bg-orange-500' },
   { bg: 'bg-cyan-50', text: 'text-cyan-600', bar: 'bg-cyan-500' },
@@ -55,13 +55,59 @@ export default function Dashboard({ stats, user }: { stats: any; user: any }) {
   }).sort((a, b) => b.usedBy - a.usedBy).slice(0, 4);
 
   return (
-    <div className="page-enter">
-      <div className="mb-4">
-        <h2 className="text-xl font-extrabold text-slate-700">Dashboard</h2>
-        <p className="text-slate-500 mt-1 italic">Resumen General de la plataforma ExelixiTech</p>
+    <div className="page-enter max-w-7xl mx-auto">
+      {/* Hero / Welcome */}
+      <div
+        className="rounded-2xl mb-6 overflow-hidden relative"
+        style={{ background: 'linear-gradient(135deg, #0C133A 0%, #1a2255 60%, #07092a 100%)' }}
+      >
+        {/* Decorative glow */}
+        <div
+          className="absolute -right-20 -top-20 w-72 h-72 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(237,116,35,0.18) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute -left-32 -bottom-32 w-80 h-80 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(5,198,223,0.10) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span
+              className="inline-flex items-center gap-2 text-[10px] font-bold uppercase mb-3 px-2.5 py-1 rounded-full"
+              style={{
+                background: 'rgba(237,116,35,0.15)',
+                color: '#ED7423',
+                border: '1px solid rgba(237,116,35,0.3)',
+                letterSpacing: '0.12em',
+                fontFamily: 'var(--font-display)',
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full pulse-pumpkin" style={{ background: '#ED7423' }} />
+              ADMIN PANEL
+            </span>
+            <h2
+              className="text-2xl sm:text-3xl text-white leading-tight"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.02em' }}
+            >
+              Hola, <span style={{ color: '#ED7423' }}>{user?.nombre || user?.email?.split('@')[0]}</span>
+            </h2>
+            <p className="text-white/55 text-sm mt-1.5 max-w-lg">
+              Resumen general de la plataforma Exélixi — gestiona empresas, usuarios y módulos desde un solo lugar.
+            </p>
+          </div>
+          <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+            <span className="text-[10px] text-white/40 uppercase tracking-widest" style={{ fontFamily: 'var(--font-display)' }}>
+              Última sincronización
+            </span>
+            <span className="text-sm font-semibold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+              {new Date().toLocaleString('es-VE', { dateStyle: 'medium', timeStyle: 'short' })}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
         <StatCard label="Empresas Registradas" value={stats.empresas} icon="🏢" color="violet" onClick={() => navigate('/empresas')} />
         <StatCard label="Usuarios en Plataforma" value={stats.usuarios} icon="👤" color="blue" onClick={() => navigate('/usuarios')} />
         <StatCard label="Módulos en Catálogo" value={stats.modulos} icon="🧩" color="rose" onClick={() => navigate('/modulos')} />
@@ -71,7 +117,7 @@ export default function Dashboard({ stats, user }: { stats: any; user: any }) {
       <div className="card p-4 mb-4">
         <p className="text-sm font-bold text-slate-700 mb-4 px-2">Acciones Rápidas</p>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button onClick={() => navigate('/empresas/nueva')} className="flex-1 py-3 px-4 rounded-xl bg-violet-50 text-violet-700 hover:bg-slate-100 hover:text-slate-700 transition-colors flex items-center justify-center gap-2 text-sm font-semibold border border-violet-100/50 hover:border-slate-200">
+          <button onClick={() => navigate('/empresas/nueva')} className="flex-1 py-3 px-4 rounded-xl bg-orange-50 text-orange-600 hover:bg-slate-100 hover:text-slate-700 transition-colors flex items-center justify-center gap-2 text-sm font-semibold border border-orange-100/50 hover:border-slate-200">
             <Building2 size={18} /> Registrar Empresa
           </button>
           <button onClick={() => navigate('/usuarios/nuevo')} className="flex-1 py-3 px-4 rounded-xl bg-blue-50 text-blue-700 hover:bg-slate-100 hover:text-slate-700 transition-colors flex items-center justify-center gap-2 text-sm font-semibold border border-blue-100/50 hover:border-slate-200">
@@ -99,8 +145,8 @@ export default function Dashboard({ stats, user }: { stats: any; user: any }) {
               <div className="space-y-5">
                 {adoption.map(m => {
                   const percentage = empresas.length > 0 ? Math.round((m.usedBy / empresas.length) * 100) : 0;
-                  const colorBar = m._color?.bar || 'bg-violet-500';
-                  const colorText = m._color?.text || 'text-violet-600';
+                  const colorBar = m._color?.bar || 'bg-orange-500';
+                  const colorText = m._color?.text || 'text-orange-500';
                   
                   return (
                     <div key={m.id}>
@@ -162,7 +208,7 @@ export default function Dashboard({ stats, user }: { stats: any; user: any }) {
                 
                 <button 
                   onClick={() => navigate('/modulos')}
-                  className="w-full py-2 mt-2 text-xs font-semibold italic text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-lg transition-colors"
+                  className="w-full py-2 mt-2 text-xs font-semibold italic text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                 >
                   Ver Catálogo Completo ({stats.modulos})
                 </button>

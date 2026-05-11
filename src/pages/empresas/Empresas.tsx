@@ -90,7 +90,7 @@ export default function Empresas({ toast }: { toast: (m: string, t: 'success' | 
                   <tr key={o.id} className="hover:bg-slate-50 transition-colors">
                     <td className="td pl-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center text-sm font-bold text-violet-700 shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-600 shrink-0">
                           {o.nombre?.charAt(0).toUpperCase() || '—'}
                         </div>
                         <div>
@@ -108,7 +108,7 @@ export default function Empresas({ toast }: { toast: (m: string, t: 'success' | 
                         // y el módulo en sí está activo globalmente (m.modulo.activo !== false)
                         const c = o.modulos?.filter((m: any) => m.activo && m.modulo?.activo !== false).length || 0;
                         return (
-                          <div className={`text-sm font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-2 ${c === 0 ? 'bg-amber-50 text-amber-700' : 'bg-violet-50 text-violet-600'}`}>
+                          <div className={`text-sm font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-2 ${c === 0 ? 'bg-amber-50 text-amber-700' : 'bg-orange-50 text-orange-500'}`}>
                             {c === 0 ? 'Sin módulos' : `${c} módulo${c !== 1 ? 's' : ''}`}
                           </div>
                         );

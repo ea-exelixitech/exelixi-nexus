@@ -146,7 +146,7 @@ export default function Usuarios({ toast, user }: { toast: (m: string, t: 'succe
                     <tr className="hover:bg-slate-50 transition-colors">
                       <td className="td">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-sky-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
                             {u.email?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div>
@@ -164,7 +164,7 @@ export default function Usuarios({ toast, user }: { toast: (m: string, t: 'succe
                       <td className="td">
                         <div className="flex items-center gap-2">
                           <button 
-                            className={`p-2 rounded-lg transition-colors ${editId === u.id ? 'bg-violet-100 text-violet-600' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} 
+                            className={`p-2 rounded-lg transition-colors ${editId === u.id ? 'bg-orange-100 text-orange-500' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} 
                             title="Editar" 
                             onClick={() => editId === u.id ? setEditId(null) : startEdit(u)}
                           >

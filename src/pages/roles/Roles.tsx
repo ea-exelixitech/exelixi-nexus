@@ -141,7 +141,7 @@ export default function Roles({ toast }: { toast: (m: string, t: 'success' | 'er
                       <td className="td">
                         <div className="flex items-center gap-2">
                           <button 
-                            className={`p-2 rounded-lg transition-colors ${r.nombre === 'SuperAdmin' ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : editId === r.id ? 'bg-violet-100 text-violet-600' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} 
+                            className={`p-2 rounded-lg transition-colors ${r.nombre === 'SuperAdmin' ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : editId === r.id ? 'bg-orange-100 text-orange-500' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} 
                             title={r.nombre === 'SuperAdmin' ? 'No se puede editar el rol SuperAdmin' : 'Editar'} 
                             disabled={r.nombre === 'SuperAdmin'}
                             onClick={() => editId === r.id ? setEditId(null) : startEdit(r)}
