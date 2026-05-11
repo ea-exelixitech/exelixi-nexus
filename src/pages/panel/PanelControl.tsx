@@ -155,9 +155,10 @@ function ModuloCard({
   const mod = moduloEmpresa.modulo;
   const isModActive = moduloEmpresa.activo;
   const icon = getModuleIcon(mod.nombre);
-  const submodulosGlobales = (mod.submodulos || []).filter((s) => s.activo !== false);
+  const submodulosGlobales = mod.submodulos || [];
+  const submodulosActivosGlobalmente = submodulosGlobales.filter((s) => s.activo !== false);
   const submodulosActivos = submodulosGlobales.filter((s) => s.activoEmpresa);
-  const hasSubmodulos = submodulosGlobales.length > 0;
+  const hasSubmodulos = submodulosActivosGlobalmente.length > 0;
   const { online, recheck } = useModuleHealth(mod.url, isModActive);
   const networkUrl = mod.url?.replace('localhost', networkIp || 'localhost');
 
@@ -194,7 +195,7 @@ function ModuloCard({
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             {isModActive ? (
               <span className="text-xs font-semibold text-emerald-600">
-                {submodulosActivos.length}/{submodulosGlobales.length} submódulos activos
+                {submodulosActivos.length}/{submodulosActivosGlobalmente.length} submódulos activos
               </span>
             ) : (
               <span className="text-xs text-slate-400">Módulo desactivado</span>
@@ -221,16 +222,6 @@ function ModuloCard({
 
         {/* Toggle principal */}
         <div className="flex items-center gap-2 shrink-0">
-          <span
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
-            style={isModActive
-              ? { background: 'rgba(237,116,35,0.10)', color: '#ED7423' }
-              : { background: '#f1f5f9', color: '#94a3b8' }
-            }
-          >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: isModActive ? '#ED7423' : '#cbd5e1' }} />
-            {isModActive ? 'ACTIVO' : 'INACTIVO'}
-          </span>
           <Toggle
             checked={isModActive}
             onChange={() => onToggleModule(mod.id, isModActive)}
@@ -299,6 +290,8 @@ function ModuloCard({
 
           {expanded && submodulosGlobales.map(sub => {
             const isSubActive = isModActive && sub.activoEmpresa;
+            const isGloballyInactive = sub.activo === false;
+            
             return (
               <div
                 key={sub.id}
@@ -313,24 +306,22 @@ function ModuloCard({
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ background: isSubActive ? '#ED7423' : '#cbd5e1' }}
                   />
-                  <span className={['text-sm font-medium truncate', isSubActive ? 'text-slate-900' : 'text-slate-400'].join(' ')}>
-                    {sub.nombre}
-                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className={['text-sm font-medium truncate', isSubActive ? 'text-slate-900' : 'text-slate-400'].join(' ')}>
+                      {sub.nombre}
+                    </span>
+                    {isGloballyInactive && (
+                      <span className="text-[10px] text-red-500 font-semibold mt-0.5">
+                        Desactivado globalmente
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={isSubActive
-                      ? { background: 'rgba(237,116,35,0.12)', color: '#ED7423' }
-                      : { background: '#f1f5f9', color: '#94a3b8' }
-                    }
-                  >
-                    {isSubActive ? 'ON' : 'OFF'}
-                  </span>
                   <Toggle
                     checked={isSubActive}
                     onChange={() => onToggleSubmodulo(sub.id, isSubActive, sub.nombre)}
-                    disabled={!isModActive}
+                    disabled={!isModActive || isGloballyInactive}
                     size="sm"
                   />
                 </div>
@@ -691,9 +682,9 @@ export default function PanelControl({
             <div className="flex items-center justify-center py-16">
               <Spinner size={28} />
             </div>
-          ) : empresa.modulos && empresa.modulos.length > 0 ? (
+          ) : empresa.modulos && empresa.modulos.filter(m => m.modulo.activo !== false).length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {empresa.modulos.map((moduloEmpresa) => (
+              {empresa.modulos.filter(m => m.modulo.activo !== false).map((moduloEmpresa) => (
                 <ModuloCard
                   key={moduloEmpresa.moduloId}
                   moduloEmpresa={moduloEmpresa}

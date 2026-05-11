@@ -47,7 +47,7 @@ function HexagonMark({ size = 280, opacity = 0.08, color = '#FFFFFF' }: { size?:
 
 export default function Login({ onLogin }: { onLogin: (u: any, token: string) => void }) {
   const [email,        setEmail]        = useState('admin@exelixi.com');
-  const [password,     setPassword]     = useState('password123');
+  const [password,     setPassword]     = useState('Admin.123');
   const [showPassword, setShowPassword] = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
