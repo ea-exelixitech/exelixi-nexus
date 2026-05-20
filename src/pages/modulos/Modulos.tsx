@@ -23,7 +23,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
 
   // Inline submodule edit state
   const [editSubId, setEditSubId] = useState<number | 'new' | null>(null);
-  const [subForm, setSubForm] = useState({ nombre: '', moduloId: null as number | null });
+  const [subForm, setSubForm] = useState({ nombre: '', url: '', moduloId: null as number | null });
   const [savingSub, setSavingSub] = useState(false);
 
   const load = () => { 
@@ -113,10 +113,10 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
         setSavingSub(true);
         try {
           if (subId) {
-            await modulesApi.actualizarSubmodulo(subId.toString(), { nombre: subForm.nombre });
+            await modulesApi.actualizarSubmodulo(subId.toString(), { nombre: subForm.nombre, url: subForm.url || null });
             toast('Submódulo actualizado con éxito', 'success');
           } else {
-            await modulesApi.crearSubmodulo({ nombre: subForm.nombre, moduloId: subForm.moduloId });
+            await modulesApi.crearSubmodulo({ nombre: subForm.nombre, url: subForm.url || null, moduloId: subForm.moduloId });
             toast('Submódulo creado con éxito', 'success');
           }
           setEditSubId(null);
@@ -278,7 +278,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                 <button 
                                   className="btn-primary text-xs px-3 py-1.5"
                                   title="Agregar submódulo"
-                                  onClick={() => { setEditSubId('new'); setSubForm({ nombre: '', moduloId: m.id }); }}
+                                  onClick={() => { setEditSubId('new'); setSubForm({ nombre: '', url: '', moduloId: m.id }); }}
                                 >
                                   <Plus size={14} />
                                 </button>
@@ -299,18 +299,29 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                     <React.Fragment key={sub.id}>
                                       {editSubId === sub.id ? (
                                         <tr>
-                                          <td colSpan={3} className="py-2 px-3 bg-slate-50/80 border-b border-slate-100">
-                                            <form onSubmit={(e) => guardarSubmodulo(e, sub.id)} className="flex items-center gap-2">
-                                              <input 
-                                                className="input text-xs py-1.5 px-2.5 flex-1" 
-                                                value={subForm.nombre} 
-                                                onChange={e => setSubForm(p => ({ ...p, nombre: formatNombre(e.target.value) }))} 
-                                                placeholder="Nombre del submódulo..." 
-                                                maxLength={50} 
-                                                required 
-                                                autoFocus
-                                              />
-                                              <div className="flex gap-1.5 shrink-0">
+                                          <td colSpan={3} className="py-3 px-3 bg-slate-50/80 border-b border-slate-100">
+                                            <form onSubmit={(e) => guardarSubmodulo(e, sub.id)} className="flex flex-col gap-2">
+                                              <div className="flex items-center gap-2">
+                                                <input 
+                                                  className="input text-xs py-1.5 px-2.5 flex-1" 
+                                                  value={subForm.nombre} 
+                                                  onChange={e => setSubForm(p => ({ ...p, nombre: formatNombre(e.target.value) }))} 
+                                                  placeholder="Nombre del submódulo..." 
+                                                  maxLength={50} 
+                                                  required 
+                                                  autoFocus
+                                                />
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                <input 
+                                                  className="input text-xs py-1.5 px-2.5 flex-1 font-mono" 
+                                                  value={subForm.url} 
+                                                  onChange={e => setSubForm(p => ({ ...p, url: e.target.value.trim() }))} 
+                                                  placeholder="URL del servicio (ej: http://192.168.8.120:5300)" 
+                                                  type="url"
+                                                />
+                                              </div>
+                                              <div className="flex gap-1.5 justify-end">
                                                 <button type="button" className="btn-secondary text-[11px] px-2.5 py-1.5" onClick={() => setEditSubId(null)}>Cancelar</button>
                                                 <button type="submit" className="btn-primary text-[11px] px-2.5 py-1.5" disabled={savingSub}>
                                                   {savingSub ? <Spinner size={12} /> : 'Guardar'}
@@ -321,7 +332,13 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                         </tr>
                                       ) : (
                                         <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                                          <td className="td py-2 px-3 font-medium text-slate-900">{sub.nombre}</td>
+                                          <td className="td py-2 px-3">
+                                            <p className="font-medium text-slate-900">{sub.nombre}</p>
+                                            {sub.url
+                                              ? <p className="text-[10px] text-slate-400 font-mono truncate max-w-[220px]" title={sub.url}>{sub.url}</p>
+                                              : <p className="text-[10px] text-amber-500 italic">Sin URL — no generará acceso</p>
+                                            }
+                                          </td>
                                           <td className="td py-2 px-3 text-center">
                                             <span className={sub.activo ? 'badge badge-green text-[10px] px-1.5 py-0.5' : 'badge badge-red text-[10px] px-1.5 py-0.5'}>
                                               {sub.activo ? 'ACTIVO' : 'INACTIVO'}
@@ -332,7 +349,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                               <button 
                                                 className="p-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" 
                                                 title="Editar" 
-                                                onClick={() => { setEditSubId(sub.id); setSubForm({ nombre: sub.nombre, moduloId: m.id }); }}
+                                                onClick={() => { setEditSubId(sub.id); setSubForm({ nombre: sub.nombre, url: sub.url || '', moduloId: m.id }); }}
                                               >
                                                 <Pencil size={14} />
                                               </button>
@@ -358,18 +375,25 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                   
                                   {editSubId === 'new' && subForm.moduloId === m.id && (
                                     <tr>
-                                      <td colSpan={3} className="py-2 px-3 bg-orange-50/50 border-t border-slate-100">
-                                        <form onSubmit={(e) => guardarSubmodulo(e, null)} className="flex items-center gap-2">
+                                      <td colSpan={3} className="py-3 px-3 bg-orange-50/50 border-t border-slate-100">
+                                        <form onSubmit={(e) => guardarSubmodulo(e, null)} className="flex flex-col gap-2">
                                           <input 
-                                            className="input text-xs py-1.5 px-2.5 flex-1 border-orange-200 focus:border-orange-500 focus:ring-orange-500" 
+                                            className="input text-xs py-1.5 px-2.5 w-full border-orange-200 focus:border-orange-500" 
                                             value={subForm.nombre} 
                                             onChange={e => setSubForm(p => ({ ...p, nombre: formatNombre(e.target.value) }))} 
-                                            placeholder="Nombre del nuevo submódulo..." 
+                                            placeholder="Nombre del submódulo..." 
                                             maxLength={50} 
                                             required 
                                             autoFocus
                                           />
-                                          <div className="flex gap-1.5 shrink-0">
+                                          <input 
+                                            className="input text-xs py-1.5 px-2.5 w-full font-mono border-orange-200 focus:border-orange-500" 
+                                            value={subForm.url} 
+                                            onChange={e => setSubForm(p => ({ ...p, url: e.target.value.trim() }))} 
+                                            placeholder="URL del servicio (ej: http://192.168.8.120:5300)" 
+                                            type="url"
+                                          />
+                                          <div className="flex gap-1.5 justify-end">
                                             <button type="button" className="btn-secondary text-[11px] px-2.5 py-1.5" onClick={() => setEditSubId(null)}>Cancelar</button>
                                             <button type="submit" className="btn-primary text-[11px] px-2.5 py-1.5" disabled={savingSub}>
                                               {savingSub ? <Spinner size={12} /> : 'Guardar'}
