@@ -133,7 +133,8 @@ export default function EmpresaCrear({ toast }: { toast: (m: string, t: 'success
           }
 
           toast('Empresa creada y configurada exitosamente', 'success');
-          navigate('/empresas');
+          // Navegar al detalle para ver las URLs de acceso generadas
+          navigate(`/empresas/${newCompany.id}`);
         } catch (err: any) {
           toast(err.response?.data?.message || err.message || 'Error al guardar empresa', 'error');
         } finally {

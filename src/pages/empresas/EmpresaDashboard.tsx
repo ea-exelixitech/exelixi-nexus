@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { companiesApi, modulesApi } from '../../api';
-import { X, Pencil, Check } from 'lucide-react';
+import { X, Pencil, Copy, Check, Link2, Lock, ExternalLink } from 'lucide-react';
 import { Spinner, BADGE, ConfirmDialog } from '../../components/ui';
 
 const formatRif = (value: string) => {
@@ -36,6 +36,15 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ nombre: '', rif: '', tipo: '' });
   const [confirmData, setConfirmData] = useState<{ title?: string; msg: string; type?: 'primary' | 'danger'; action: () => void } | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<number | null>(null);
+  const [showUrlPanel, setShowUrlPanel] = useState(false);
+
+  const copyUrl = (url: string, subId: number) => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedUrl(subId);
+      setTimeout(() => setCopiedUrl(null), 2000);
+    });
+  };
 
   const load = () => {
     if (!id) return;
@@ -191,6 +200,14 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
           <span className={company.activo ? BADGE['ACTIVE'] : BADGE['INACTIVE']}>{company.activo ? 'ACTIVO' : 'INACTIVO'}</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
+          <button
+            className="btn-secondary text-sm flex items-center gap-2 text-sky-600 hover:bg-sky-50"
+            onClick={() => setShowUrlPanel(v => !v)}
+            title="Ver URLs de acceso a servicios"
+          >
+            <Link2 size={15} />
+            URLs de Acceso
+          </button>
           <button 
             className={`btn-secondary text-sm ${company.activo ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
             onClick={toggleStatus}
@@ -346,6 +363,88 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
           </div>
         </div>
       </div>
+
+      {/* Panel de URLs de Acceso */}
+      {showUrlPanel && (() => {
+        const allSubs: { id: number; nombre: string; url: string | null; accessUrl: string | null; activoEmpresa: boolean }[] = [];
+        (company.modulos || []).forEach((mod: any) => {
+          (mod.modulo?.submodulos || []).forEach((sub: any) => {
+            if (sub.accessUrl || sub.tenantToken) {
+              allSubs.push({
+                id: sub.id,
+                nombre: sub.nombre,
+                url: sub.url || null,
+                accessUrl: sub.accessUrl || null,
+                activoEmpresa: sub.activoEmpresa || false,
+              });
+            }
+          });
+        });
+
+        return (
+          <div className="mt-6 card p-0 border border-sky-100">
+            <div className="p-5 border-b border-sky-100 bg-sky-50/60 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-slate-900 flex items-center gap-2">
+                  <Link2 size={16} className="text-sky-500" />
+                  URLs de Acceso a Servicios
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Comparte estas URLs con los usuarios de <strong>{company.nombre}</strong>. 
+                  Cada URL es única y firmada — solo funciona si el servicio está activo.
+                </p>
+              </div>
+              <button onClick={() => setShowUrlPanel(false)} className="btn-ghost btn-icon text-slate-400 hover:text-slate-700"><X size={16} /></button>
+            </div>
+
+            {allSubs.length === 0 ? (
+              <div className="p-8 text-center text-slate-400">
+                <p className="font-medium">No hay servicios con URL configurada.</p>
+                <p className="text-sm mt-1">Asegúrate de que los submódulos tengan una URL definida en el catálogo.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {allSubs.map(sub => (
+                  <div key={sub.id} className="p-4 flex items-start gap-4">
+                    <div className={`mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${sub.activoEmpresa ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-400'}`}>
+                      {sub.activoEmpresa ? <ExternalLink size={15} /> : <Lock size={15} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-slate-800 text-sm">{sub.nombre}</p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${sub.activoEmpresa ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {sub.activoEmpresa ? 'ACTIVO' : 'INACTIVO'}
+                        </span>
+                      </div>
+                      {sub.accessUrl ? (
+                        <div className="flex items-center gap-2">
+                          <code className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-600 truncate font-mono">
+                            {sub.accessUrl}
+                          </code>
+                          <button
+                            onClick={() => sub.accessUrl && copyUrl(sub.accessUrl, sub.id)}
+                            className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${copiedUrl === sub.id ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300 hover:text-sky-600'}`}
+                            title="Copiar URL"
+                          >
+                            {copiedUrl === sub.id ? <><Check size={12} /> Copiada</> : <><Copy size={12} /> Copiar</>}
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-amber-600 italic">Sin URL configurada en el catálogo de submódulos.</p>
+                      )}
+                      {!sub.activoEmpresa && sub.accessUrl && (
+                        <p className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
+                          <Lock size={10} /> URL generada pero el servicio está inactivo — activate el submódulo para habilitar el acceso.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {confirmData && (
         <ConfirmDialog

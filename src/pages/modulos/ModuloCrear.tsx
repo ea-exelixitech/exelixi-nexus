@@ -12,15 +12,17 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ nombre: '' });
-  const [submodulos, setSubmodulos] = useState<{ id: string, nombre: string }[]>([]);
+  const [submodulos, setSubmodulos] = useState<{ id: string, nombre: string, url: string }[]>([]);
   const [confirmData, setConfirmData] = useState<{ title?: string; msg: string; type?: 'primary' | 'danger'; action: () => void } | null>(null);
 
   const addSubmodulo = () => {
-    setSubmodulos([...submodulos, { id: Date.now().toString(), nombre: '' }]);
+    setSubmodulos([...submodulos, { id: Date.now().toString(), nombre: '', url: '' }]);
   };
 
-  const updateSubmodulo = (id: string, val: string) => {
-    setSubmodulos(submodulos.map(s => s.id === id ? { ...s, nombre: formatNombre(val) } : s));
+  const updateSubmodulo = (id: string, field: 'nombre' | 'url', val: string) => {
+    setSubmodulos(submodulos.map(s =>
+      s.id === id ? { ...s, [field]: field === 'nombre' ? formatNombre(val) : val.trim() } : s
+    ));
   };
 
   const removeSubmodulo = (id: string) => {
@@ -44,9 +46,10 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
           }
 
           if (submodulos.length > 0) {
-            const promises = submodulos.map(sub => 
+            const promises = submodulos.map(sub =>
               modulesApi.crearSubmodulo({
                 nombre: sub.nombre.trim(),
+                url: sub.url || null,
                 moduloId: Number(newModule.id)
               })
             );
@@ -116,26 +119,35 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
               <div className="p-5 bg-slate-50/50">
                 <div className="space-y-3">
                   {submodulos.map((sub, index) => (
-                    <div key={sub.id} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition-colors focus-within:border-orange-300">
-                      <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center font-bold text-xs shrink-0">
-                        {index + 1}
+                    <div key={sub.id} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition-colors focus-within:border-orange-300">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center font-bold text-xs shrink-0">
+                          {index + 1}
+                        </div>
+                        <input
+                          className="input flex-1 border-transparent hover:border-slate-200 focus:border-orange-300 focus:ring-0 shadow-none bg-transparent"
+                          value={sub.nombre}
+                          onChange={e => updateSubmodulo(sub.id, 'nombre', e.target.value)}
+                          placeholder="Nombre del submódulo..."
+                          maxLength={50}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSubmodulo(sub.id)}
+                          className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
-                      <input 
-                        className="input flex-1 border-transparent hover:border-slate-200 focus:border-orange-300 focus:ring-0 shadow-none bg-transparent" 
-                        value={sub.nombre} 
-                        onChange={e => updateSubmodulo(sub.id, e.target.value)} 
-                        placeholder="Nombre del submódulo..." 
-                        maxLength={50} 
-                        required 
+                      <input
+                        className="input w-full text-xs font-mono border-slate-200 focus:border-orange-300 focus:ring-0"
+                        value={sub.url}
+                        onChange={e => updateSubmodulo(sub.id, 'url', e.target.value)}
+                        placeholder="URL del servicio (ej: http://192.168.10.215:5173)"
+                        type="url"
                       />
-                      <button 
-                        type="button" 
-                        onClick={() => removeSubmodulo(sub.id)} 
-                        className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0" 
-                        title="Eliminar"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   ))}
                   
