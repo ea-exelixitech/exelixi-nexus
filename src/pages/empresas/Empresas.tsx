@@ -30,6 +30,8 @@ export default function Empresas({ toast }: { toast: (m: string, t: 'success' | 
 
 
   const filtered = companies.filter(o => {
+    // Ocultar empresas inactivas sin búsqueda activa
+    if (!o.activo && !search) return false;
     const s = search.toLowerCase();
     const estadoStr = o.activo ? 'activo' : 'inactivo';
     return (

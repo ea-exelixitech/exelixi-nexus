@@ -55,7 +55,7 @@ export default function Dashboard({ stats, user }: { stats: any; user: any }) {
   }).sort((a, b) => b.usedBy - a.usedBy).slice(0, 4);
 
   return (
-    <div className="page-enter max-w-7xl mx-auto">
+    <div className="page-enter">
       {/* Hero / Welcome */}
       <div
         className="rounded-2xl mb-6 overflow-hidden relative"

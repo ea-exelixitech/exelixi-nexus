@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Fondo redondeado Oxford -->
+  <rect width="64" height="64" rx="14" fill="#0C133A"/>
+
+  <!-- Isotipo hexagonal Exélixi -->
+  <g transform="translate(32 32)" fill="none" stroke="#ED7423" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Hexágono exterior (vértice arriba) -->
+    <polygon points="0,-22 19,-11 19,11 0,22 -19,11 -19,-11"/>
+
+    <!-- Diagonales internas formando una X -->
+    <line x1="-19" y1="-11" x2="19" y2="11"/>
+    <line x1="19" y1="-11" x2="-19" y2="11"/>
+
+    <!-- Chevrons interiores: superior -->
+    <polyline points="-9,-3 0,-12 9,-3"/>
+    <polyline points="-5,-2 0,-7 5,-2"/>
+
+    <!-- Chevrons interiores: inferior -->
+    <polyline points="-9,3 0,12 9,3"/>
+    <polyline points="-5,2 0,7 5,2"/>
+
+    <!-- Chevrons interiores: izquierda -->
+    <polyline points="-3,-9 -12,0 -3,9"/>
+    <polyline points="-2,-5 -7,0 -2,5"/>
+
+    <!-- Chevrons interiores: derecha -->
+    <polyline points="3,-9 12,0 3,9"/>
+    <polyline points="2,-5 7,0 2,5"/>
+  </g>
+</svg>
