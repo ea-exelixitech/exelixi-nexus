@@ -89,7 +89,7 @@ export default function MiPerfil({ toast, user, setUser }: { toast: (m: string, 
   };
 
   return (
-    <div className="page-enter max-w-4xl mx-auto">
+    <div className="page-enter">
       <div className="mb-8">
         <h2 className="text-xl font-extrabold text-slate-900">Mi Perfil</h2>
         <p className="text-slate-500 mt-1 italic">Gestiona tu información personal y actualiza tu contraseña de acceso.</p>

@@ -131,6 +131,8 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   };
 
   const filtered = mods.filter(o => {
+    // Ocultar módulos inactivos sin búsqueda activa
+    if (!o.activo && !search) return false;
     const s = search.toLowerCase();
     const estadoStr = o.activo ? 'activo' : 'inactivo';
     return (

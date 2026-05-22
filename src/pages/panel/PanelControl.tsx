@@ -493,7 +493,7 @@ export default function PanelControl({
   }
 
   return (
-    <div className="page-enter max-w-6xl mx-auto">
+    <div className="page-enter">
 
       {/* ── Cabecera brand ──────────────────────────────────────────────── */}
       <div
@@ -526,32 +526,6 @@ export default function PanelControl({
           </button>
         </div>
 
-        {/* Barra de servicios */}
-        <div
-          className="px-6 py-3 flex flex-wrap gap-x-6 gap-y-1"
-          style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          {[
-            { label: 'Admin',      url: `http://localhost:5200`,      net: `http://${networkIp || '…'}:5200` },
-            { label: 'OCR',        url: 'http://localhost:5181',       net: `http://${networkIp || '…'}:5181` },
-            { label: 'Formulario', url: 'http://localhost:5182',       net: `http://${networkIp || '…'}:5182` },
-            { label: 'Emisión',    url: 'http://localhost:5183',       net: `http://${networkIp || '…'}:5183` },
-            { label: 'Pagos',      url: 'http://localhost:5184',       net: `http://${networkIp || '…'}:5184` },
-            { label: 'RCV Full',   url: 'http://localhost:5180',       net: `http://${networkIp || '…'}:5180` },
-          ].map(s => (
-            <a
-              key={s.label}
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-[11px] font-medium text-white/60 hover:text-white transition-colors"
-            >
-              <ExternalLink size={10} />
-              <span className="text-white/80 font-bold">{s.label}</span>
-              <span className="hidden sm:inline">{s.net}</span>
-            </a>
-          ))}
-        </div>
       </div>
 
       {/* Selector de empresa */}

@@ -71,7 +71,7 @@ export default function UsuarioCrear({ toast }: { toast: (m: string, t: 'success
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card p-5">
           <form onSubmit={guardar} className="space-y-4">
             <div>
