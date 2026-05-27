@@ -17,5 +17,15 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    preview: {
+      port: 5200,
+      host: true,
+      proxy: {
+        '/api': {
+          target: env.VITE_API_URL || 'http://127.0.0.1:3092',
+          changeOrigin: true,
+        },
+      },
+    },
   };
 });
