@@ -1,7 +1,14 @@
 {
-  "name": "exelitech-admin",
+  "name": "exelixi-nexus",
   "version": "1.0.0",
+  "description": "Panel de administración Exélixi Nexus — empresas, módulos y flujo RCV",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jsotoexelixitech/exelixi-nexus.git"
+  },
+  "license": "MIT",
+  "private": false,
   "scripts": {
     "dev": "vite --port 5200",
     "build": "tsc -b && vite build",
