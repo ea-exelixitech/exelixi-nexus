@@ -1,7 +1,7 @@
 /**
  * PM2 — Exélixi Nexus Admin (producción)
  *
- *   pm2 start ecosystem.config.js --env production
+ *   pm2 start ecosystem.config.cjs --env production
  *   pm2 logs nexus-admin
  */
 const path = require('path');
