@@ -108,7 +108,7 @@ Puertos recomendados en el mismo host que los módulos RCV:
 ```bash
 npm ci
 npm run build
-pm2 start ecosystem.config.js --env production
+pm2 start ecosystem.config.cjs --env production
 ```
 
 El `ecosystem.config.js` usa `vite preview` con proxy `/api` → `127.0.0.1:3092`.
