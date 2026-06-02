@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { companiesApi, modulesApi } from '../../api';
-import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal, Lock } from 'lucide-react';
+import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal, Lock } from 'lucide-react';
 import { Spinner, BADGE, ConfirmDialog } from '../../components/ui';
 
 const formatRif = (value: string) => {
@@ -56,7 +56,7 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
   const [showUrlPanel, setShowUrlPanel] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'modules' | 'urls'>('overview');
   const [expandedModule, setExpandedModule] = useState<number | null>(null);
-  const [urlGroup, setUrlGroup] = useState<string>('');
+  const [expandedUrlGroup, setExpandedUrlGroup] = useState<number | null>(null);
 
   const copyUrl = (url: string, subId: number) => {
     const doSet = () => { setCopiedUrl(subId); setTimeout(() => setCopiedUrl(null), 2000); };
@@ -774,18 +774,17 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
 
       {/* ━━━ TAB: URLS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {activeTab === 'urls' && (() => {
-        const groups: { moduloNombre: string; moduloIcon: string; subs: { id: number; nombre: string; accessUrl: string; activoEmpresa: boolean }[] }[] = [];
+        const groups: { moduloId: number; moduloNombre: string; moduloIcon: string; subs: { id: number; nombre: string; accessUrl: string; activoEmpresa: boolean }[] }[] = [];
         (company.modulos || []).forEach((mod: any) => {
           if (!mod.modulo?.activo) return;
           const subs: any[] = [];
           (mod.modulo?.submodulos || []).forEach((sub: any) => {
             if (sub.url && sub.accessUrl) subs.push({ id: sub.id, nombre: sub.nombre, accessUrl: sub.accessUrl, activoEmpresa: sub.activoEmpresa || false });
           });
-          if (subs.length > 0) groups.push({ moduloNombre: mod.modulo.nombre, moduloIcon: mod.modulo.icon || '🧩', subs });
+          if (subs.length > 0) groups.push({ moduloId: mod.moduloId ?? mod.modulo.id, moduloNombre: mod.modulo.nombre, moduloIcon: mod.modulo.icon || '🧩', subs });
         });
         const totalSubs    = groups.reduce((a, g) => a + g.subs.length, 0);
         const totalActivos = groups.reduce((a, g) => a + g.subs.filter(s => s.activoEmpresa).length, 0);
-        const selectedGroup = groups.find(g => g.moduloNombre === urlGroup) || groups[0];
 
         return (
           <div
@@ -840,37 +839,57 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                 <p className="text-xs text-slate-400 mt-1">Agrega URLs base en el catálogo de submódulos.</p>
               </div>
             ) : (
-              <div>
-                {/* Selector de módulo: mantiene el panel compacto aunque haya muchos módulos */}
-                <div
-                  className="flex items-center gap-3 px-5 py-3 bg-slate-50/60"
-                  style={{ borderBottom: '1px solid #EAECEF' }}
-                >
-                  <span className="text-[11px] font-black uppercase tracking-widest shrink-0" style={{ color: '#0C133A' }}>
-                    Módulo
-                  </span>
-                  <div className="relative flex-1 max-w-xs">
-                    <select
-                      value={selectedGroup.moduloNombre}
-                      onChange={(e) => setUrlGroup(e.target.value)}
-                      className="w-full appearance-none rounded-lg pl-3 pr-9 py-2 text-sm font-semibold outline-none cursor-pointer"
-                      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#0C133A' }}
-                    >
-                      {groups.map((g, gi) => (
-                        <option key={gi} value={g.moduloNombre}>
-                          {g.moduloIcon} {g.moduloNombre} ({g.subs.filter(s => s.activoEmpresa).length}/{g.subs.length})
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-semibold ml-auto">
-                    {selectedGroup.subs.filter(s => s.activoEmpresa).length}/{selectedGroup.subs.length} activos
-                  </span>
-                </div>
+              <div className="divide-y" style={{ borderColor: '#EAECEF' }}>
+                {groups.map(group => {
+                  const isExpanded = expandedUrlGroup === group.moduloId;
+                  const activos = group.subs.filter(s => s.activoEmpresa).length;
+                  return (
+                    <div key={group.moduloId}>
+                      {/* Fila del módulo (clickeable, mismo estilo que la pestaña Módulos) */}
+                      <div
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/60 transition-colors cursor-pointer"
+                        onClick={() => setExpandedUrlGroup(isExpanded ? null : group.moduloId)}
+                      >
+                        <ChevronRight
+                          size={14}
+                          className="text-slate-400 transition-transform shrink-0"
+                          style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                        />
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center text-xl shrink-0"
+                          style={{ background: '#E0F7FA', border: '1px solid #B6ECF3' }}
+                        >
+                          {group.moduloIcon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate" style={{ color: '#0C133A', fontFamily: 'var(--font-display)' }}>
+                            {group.moduloNombre}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                            <span>
+                              <span className="font-bold" style={{ color: '#0891B2' }}>{activos}</span>
+                              <span> de {group.subs.length} URLs</span>
+                            </span>
+                            {activos > 0 && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider" style={{ background: '#ECFDF5', color: '#047857' }}>
+                                <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                                Activo
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <span
+                          className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shrink-0"
+                          style={{ background: '#E0F7FA', color: '#0891B2' }}
+                        >
+                          {activos}/{group.subs.length}
+                        </span>
+                      </div>
 
-                <div className="divide-y" style={{ borderColor: '#EAECEF' }}>
-                  {selectedGroup.subs.map(sub => (
+                      {/* URLs del módulo (al expandir) */}
+                      {isExpanded && (
+                        <div className="divide-y bg-slate-50/40" style={{ borderColor: '#EAECEF' }}>
+                          {group.subs.map(sub => (
                         <div
                           key={sub.id}
                           className={`flex items-center gap-4 px-5 py-3 hover:bg-slate-50/40 transition-colors ${!sub.activoEmpresa ? 'opacity-55' : ''}`}
@@ -938,8 +957,12 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                             </a>
                           </div>
                         </div>
-                      ))}
-                </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
