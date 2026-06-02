@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { companiesApi, modulesApi } from '../../api';
-import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal } from 'lucide-react';
+import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal, Lock } from 'lucide-react';
 import { Spinner, BADGE, ConfirmDialog } from '../../components/ui';
 
 const formatRif = (value: string) => {
@@ -24,6 +24,22 @@ const formatRif = (value: string) => {
 
 const formatNombre = (value: string) => {
   return value.replace(/[^a-zA-Z0-9\s\-\.,'&()áéíóúÁÉÍÓÚñÑüÜ]/g, '').substring(0, 50);
+};
+
+// Acorta la URL de acceso para mostrarla: deja la parte legible (host + ruta +
+// query salvo el token) y separa el `nexus_token` para mostrarlo como chip.
+const prettyAccessUrl = (raw: string): { base: string; hasToken: boolean } => {
+  try {
+    const u = new URL(raw);
+    const hasToken = u.searchParams.has('nexus_token');
+    u.searchParams.delete('nexus_token');
+    const qs = u.searchParams.toString();
+    const path = u.pathname === '/' ? '' : u.pathname;
+    const base = `${u.host}${path}${qs ? '?' + decodeURIComponent(qs) : ''}`;
+    return { base, hasToken };
+  } catch {
+    return { base: raw, hasToken: false };
+  }
 };
 
 export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'success' | 'error') => void }) {
@@ -860,13 +876,29 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <div
-                              className="px-3 py-2 rounded-md font-mono text-[11px] truncate"
-                              style={{ background: '#F8FAFC', color: '#475569' }}
-                              title={sub.accessUrl}
-                            >
-                              {sub.accessUrl}
-                            </div>
+                            {(() => {
+                              const { base, hasToken } = prettyAccessUrl(sub.accessUrl);
+                              return (
+                                <div
+                                  className="flex items-center gap-2 px-3 py-2 rounded-md"
+                                  style={{ background: '#F8FAFC' }}
+                                  title={sub.accessUrl}
+                                >
+                                  <span className="font-mono text-[11px] truncate" style={{ color: '#475569' }}>
+                                    {base}
+                                  </span>
+                                  {hasToken && (
+                                    <span
+                                      className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                                      style={{ background: '#E2E8F0', color: '#64748B' }}
+                                      title="La URL incluye un token de acceso cifrado (oculto). Usa Copiar para el enlace completo."
+                                    >
+                                      <Lock size={9} /> token
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0">
