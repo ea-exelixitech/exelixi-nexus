@@ -56,6 +56,7 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
   const [showUrlPanel, setShowUrlPanel] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'modules' | 'urls'>('overview');
   const [expandedModule, setExpandedModule] = useState<number | null>(null);
+  const [urlGroup, setUrlGroup] = useState<string>('');
 
   const copyUrl = (url: string, subId: number) => {
     const doSet = () => { setCopiedUrl(subId); setTimeout(() => setCopiedUrl(null), 2000); };
@@ -784,6 +785,7 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
         });
         const totalSubs    = groups.reduce((a, g) => a + g.subs.length, 0);
         const totalActivos = groups.reduce((a, g) => a + g.subs.filter(s => s.activoEmpresa).length, 0);
+        const selectedGroup = groups.find(g => g.moduloNombre === urlGroup) || groups[0];
 
         return (
           <div
@@ -839,23 +841,36 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
               </div>
             ) : (
               <div>
-                {groups.map((group, gi) => (
-                  <div key={gi}>
-                    <div
-                      className="flex items-center gap-2 px-5 py-2.5 bg-slate-50/60"
-                      style={{ borderBottom: '1px solid #EAECEF', borderTop: gi > 0 ? '1px solid #EAECEF' : 'none' }}
+                {/* Selector de módulo: mantiene el panel compacto aunque haya muchos módulos */}
+                <div
+                  className="flex items-center gap-3 px-5 py-3 bg-slate-50/60"
+                  style={{ borderBottom: '1px solid #EAECEF' }}
+                >
+                  <span className="text-[11px] font-black uppercase tracking-widest shrink-0" style={{ color: '#0C133A' }}>
+                    Módulo
+                  </span>
+                  <div className="relative flex-1 max-w-xs">
+                    <select
+                      value={selectedGroup.moduloNombre}
+                      onChange={(e) => setUrlGroup(e.target.value)}
+                      className="w-full appearance-none rounded-lg pl-3 pr-9 py-2 text-sm font-semibold outline-none cursor-pointer"
+                      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#0C133A' }}
                     >
-                      <span className="text-sm leading-none">{group.moduloIcon}</span>
-                      <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#0C133A' }}>
-                        {group.moduloNombre}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-semibold ml-auto">
-                        {group.subs.filter(s => s.activoEmpresa).length}/{group.subs.length} activos
-                      </span>
-                    </div>
+                      {groups.map((g, gi) => (
+                        <option key={gi} value={g.moduloNombre}>
+                          {g.moduloIcon} {g.moduloNombre} ({g.subs.filter(s => s.activoEmpresa).length}/{g.subs.length})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-semibold ml-auto">
+                    {selectedGroup.subs.filter(s => s.activoEmpresa).length}/{selectedGroup.subs.length} activos
+                  </span>
+                </div>
 
-                    <div className="divide-y" style={{ borderColor: '#EAECEF' }}>
-                      {group.subs.map(sub => (
+                <div className="divide-y" style={{ borderColor: '#EAECEF' }}>
+                  {selectedGroup.subs.map(sub => (
                         <div
                           key={sub.id}
                           className={`flex items-center gap-4 px-5 py-3 hover:bg-slate-50/40 transition-colors ${!sub.activoEmpresa ? 'opacity-55' : ''}`}
@@ -924,9 +939,7 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                ))}
+                </div>
               </div>
             )}
           </div>
