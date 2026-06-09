@@ -23,6 +23,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
 
   // Parametrizar state
   const [loadingToken, setLoadingToken] = useState<number | null>(null);
+  const [parametrizarMod, setParametrizarMod] = useState<any>(null);
 
   // Inline submodule edit state
   const [editSubId, setEditSubId] = useState<number | 'new' | null>(null);
@@ -285,38 +286,18 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                           )}
                         </div>
                       </td>
-                      <td className="td text-left align-top max-w-[280px]">
-                        <div className="flex flex-wrap gap-2 justify-start">
-                          {(m.submodulos || []).filter((s: any) => s.url && s.activo).map((sub: any) => {
-                            const n = sub.nombre.toLowerCase();
-                            let Icono = Settings2;
-                            if (n.includes('ocr')) Icono = FileText;
-                            else if (n.includes('formulario')) Icono = LayoutList;
-                            else if (n.includes('emision')) Icono = Shield;
-                            else if (n.includes('pago')) Icono = CreditCard;
-
-                            const colorClass = productoMod === 'funerario' 
-                              ? 'bg-fuchsia-50/80 text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-100 hover:border-fuchsia-300 shadow-fuchsia-500/10'
-                              : 'bg-sky-50/80 text-sky-700 border-sky-200 hover:bg-sky-100 hover:border-sky-300 shadow-sky-500/10';
-
-                            return (
-                              <button
-                                key={sub.id}
-                                title={`Parametrizar ${sub.nombre}`}
-                                disabled={loadingToken === sub.id}
-                                onClick={() => abrirParametrizador(sub, productoMod)}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border rounded-xl backdrop-blur-sm shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 ${colorClass}`}
-                              >
-                                {loadingToken === sub.id ? <Spinner size={12} /> : <Icono size={12} />}
-                                {sub.nombre}
-                                <ExternalLink size={10} className="opacity-60 ml-0.5" />
-                              </button>
-                            );
-                          })}
-                          {!(m.submodulos || []).some((s: any) => s.url && s.activo) && (
-                            <span className="text-[10px] text-slate-400 italic px-2 py-1">Sin URL configurable</span>
-                          )}
-                        </div>
+                      <td className="td text-center">
+                        {!(m.submodulos || []).some((s: any) => s.url && s.activo) ? (
+                          <span className="text-[10px] text-slate-400 italic px-2 py-1">Sin submódulos configurables</span>
+                        ) : (
+                          <button
+                            onClick={() => setParametrizarMod(m)}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white text-xs font-bold rounded-2xl shadow-md shadow-indigo-500/30 transition-all hover:shadow-lg hover:-translate-y-0.5"
+                          >
+                            <Settings2 size={14} />
+                            Parametrizar
+                          </button>
+                        )}
                       </td>
                     </tr>
                     {editId === m.id && (
@@ -510,6 +491,105 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
           onConfirm={confirmData.action}
           onCancel={() => setConfirmData(null)}
         />
+      )}
+
+      {/* MODAL DE PARAMETRIZADORES (GLASSMORPHISM CARDS) */}
+      {parametrizarMod && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-md transition-opacity">
+          <div className="bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+            {/* Header del Modal */}
+            <div className="px-8 py-6 border-b border-slate-200/50 flex justify-between items-center bg-white/50">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+                    <Settings2 size={24} />
+                  </div>
+                  <h2 className="text-2xl font-black text-slate-800 tracking-tight">Parametrizadores</h2>
+                </div>
+                <p className="text-sm text-slate-500 font-medium ml-11">
+                  Módulo: <span className="text-slate-800 font-bold">{parametrizarMod.nombre}</span>
+                </p>
+              </div>
+              <button 
+                onClick={() => setParametrizarMod(null)} 
+                className="p-2.5 bg-white rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-50 shadow-sm border border-slate-200 transition-all"
+              >
+                <XIcon size={20} />
+              </button>
+            </div>
+            
+            {/* Cuerpo del Modal (Grid de Tarjetas) */}
+            <div className="p-8 overflow-y-auto bg-slate-50/30">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(parametrizarMod.submodulos || []).filter((s: any) => s.url && s.activo).map((sub: any) => {
+                  const n = sub.nombre.toLowerCase();
+                  let Icono = Settings2;
+                  let gradient = 'from-slate-500 to-slate-700';
+                  let shadow = 'shadow-slate-500/20';
+                  let iconBg = 'bg-slate-100 text-slate-600';
+                  
+                  if (n.includes('ocr')) {
+                    Icono = FileText;
+                    gradient = 'from-blue-500 to-cyan-500';
+                    shadow = 'shadow-cyan-500/20';
+                    iconBg = 'bg-cyan-50 text-cyan-600';
+                  } else if (n.includes('formulario')) {
+                    Icono = LayoutList;
+                    gradient = 'from-emerald-500 to-teal-500';
+                    shadow = 'shadow-teal-500/20';
+                    iconBg = 'bg-emerald-50 text-emerald-600';
+                  } else if (n.includes('emision')) {
+                    Icono = Shield;
+                    gradient = 'from-violet-500 to-purple-600';
+                    shadow = 'shadow-purple-500/20';
+                    iconBg = 'bg-purple-50 text-purple-600';
+                  } else if (n.includes('pago')) {
+                    Icono = CreditCard;
+                    gradient = 'from-amber-500 to-orange-500';
+                    shadow = 'shadow-orange-500/20';
+                    iconBg = 'bg-orange-50 text-orange-600';
+                  }
+
+                  const productoMod = parametrizarMod.nombre?.toLowerCase().includes('funerar') ? 'funerario' : 'rcv';
+
+                  return (
+                    <div 
+                      key={sub.id}
+                      className="group relative bg-white rounded-3xl p-6 border border-slate-200 hover:border-transparent transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+                    >
+                      {/* Borde Gradiente animado en hover */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10`}></div>
+                      <div className="absolute inset-[2px] bg-white rounded-[22px] -z-10"></div>
+                      
+                      <div className="flex justify-between items-start mb-6">
+                        <div className={`p-3.5 rounded-2xl ${iconBg} transition-colors group-hover:scale-110 duration-300`}>
+                          <Icono size={24} strokeWidth={2.5} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${productoMod === 'funerario' ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-sky-100 text-sky-700'}`}>
+                          {productoMod}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-lg font-black text-slate-800 mb-2 group-hover:text-slate-900">{sub.nombre}</h3>
+                      <p className="text-xs text-slate-500 mb-6 line-clamp-2">
+                        Configura las reglas de negocio, validaciones y apariencia de este submódulo.
+                      </p>
+                      
+                      <button
+                        disabled={loadingToken === sub.id}
+                        onClick={() => abrirParametrizador(sub, productoMod)}
+                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-sm bg-gradient-to-r ${gradient} ${shadow} hover:shadow-lg transition-all disabled:opacity-50`}
+                      >
+                        {loadingToken === sub.id ? <Spinner size={16} /> : 'Configurar Módulo'}
+                        <ExternalLink size={16} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
