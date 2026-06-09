@@ -45,17 +45,32 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   
   useEffect(load, []);
 
-  const abrirParametrizador = async (sub: any, producto: string) => {
-    if (!sub.url) { toast('Este submódulo no tiene URL configurada', 'error'); return; }
-    setLoadingToken(sub.id);
+  const abrirParametrizador = async (submodulo: any, productoName: string) => {
+    if (!submodulo.url) { toast('Este submódulo no tiene URL configurada', 'error'); return; }
     try {
-      const empresaId = 1; // TODO: selección multi-empresa futura
-      const r = await configApi.generarToken(empresaId, producto, sub.nombre.toLowerCase());
-      const token: string = r.data?.data?.token ?? r.data?.token;
-      const url = `${sub.url}/config?product=${producto}&token=${token}`;
-      window.open(url, '_blank');
-    } catch {
-      toast('No se pudo generar el token de acceso', 'error');
+      setLoadingToken(submodulo.id);
+      
+      // Normalizar nombre de submódulo
+      const nombreSub = submodulo.nombre.toLowerCase();
+      let moduloKey = 'ocr';
+      if (nombreSub.includes('formulario')) moduloKey = 'formulario';
+      else if (nombreSub.includes('pago')) moduloKey = 'pagos';
+      else if (nombreSub.includes('ocr')) moduloKey = 'ocr';
+
+      const response = await configApi.generarToken(1, productoName.toLowerCase(), moduloKey);
+      const token = response.data?.data?.token ?? response.data?.token;
+      
+      if (token) {
+        const url = new URL(submodulo.url);
+        url.pathname = '/config';
+        url.searchParams.set('product', productoName.toLowerCase());
+        url.searchParams.set('token', token);
+        window.open(url.toString(), '_blank');
+      } else {
+        toast('No se pudo generar el token de acceso', 'error');
+      }
+    } catch (err: any) {
+      toast(err.response?.data?.message || 'Error al generar el token de acceso', 'error');
     } finally {
       setLoadingToken(null);
     }
