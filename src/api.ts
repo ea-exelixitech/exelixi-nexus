@@ -74,4 +74,8 @@ export const usersApi = {
   cambiarEstado: (id: string) => api.patch(`/users/${id}/status`),
   cambiarPassword: (d: any) => api.post('/users/change-password', d),
 };
+export const configApi = {
+  generarToken: (empresaId: number, producto: string, modulo: string) =>
+    api.get(`/config/token/${empresaId}/${producto}/${modulo}`),
+};
 export default api;

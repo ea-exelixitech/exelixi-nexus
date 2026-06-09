@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { modulesApi } from '../../api';
-import { Plus, RefreshCw, Power, Pencil, X as XIcon, Save, Trash2 } from 'lucide-react';
+import { modulesApi, configApi } from '../../api';
+import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink } from 'lucide-react';
 import { Spinner, ConfirmDialog } from '../../components/ui';
 
 const formatNombre = (value: string) => {
@@ -20,6 +20,9 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   const [editId, setEditId] = useState<string | number | null>(null);
   const [editForm, setEditForm] = useState({ nombre: '' });
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // Parametrizar state
+  const [loadingToken, setLoadingToken] = useState<number | null>(null);
 
   // Inline submodule edit state
   const [editSubId, setEditSubId] = useState<number | 'new' | null>(null);
@@ -41,6 +44,22 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   };
   
   useEffect(load, []);
+
+  const abrirParametrizador = async (sub: any, producto: string) => {
+    if (!sub.url) { toast('Este submódulo no tiene URL configurada', 'error'); return; }
+    setLoadingToken(sub.id);
+    try {
+      const empresaId = 1; // TODO: selección multi-empresa futura
+      const r = await configApi.generarToken(empresaId, producto, sub.nombre.toLowerCase());
+      const token: string = r.data?.data?.token ?? r.data?.token;
+      const url = `${sub.url}/config?product=${producto}&token=${token}`;
+      window.open(url, '_blank');
+    } catch {
+      toast('No se pudo generar el token de acceso', 'error');
+    } finally {
+      setLoadingToken(null);
+    }
+  };
 
   const toggleStatus = async (mod: any) => {
     try {
@@ -184,10 +203,14 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                   <th className="th text-center">Submódulos</th>
                   <th className="th text-center">Estado</th>
                   <th className="th text-center">Acciones</th>
+                  <th className="th text-center">Parametrizador</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(m => (
+                {filtered.map(m => {
+                  // Determinar el producto del módulo por nombre
+                  const productoMod = m.nombre?.toLowerCase().includes('funerar') ? 'funerario' : 'rcv';
+                  return (
                   <React.Fragment key={m.id}>
                     <tr className="hover:bg-slate-50 transition-colors">
                       <td className="td pl-5 font-semibold text-slate-900">{m.nombre}</td>
@@ -244,6 +267,26 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                             >
                               <Power size={16} />
                             </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="td text-center">
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {(m.submodulos || []).filter((s: any) => s.url && s.activo).map((sub: any) => (
+                            <button
+                              key={sub.id}
+                              title={`Parametrizar ${sub.nombre}`}
+                              disabled={loadingToken === sub.id}
+                              onClick={() => abrirParametrizador(sub, productoMod)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-semibold transition-colors disabled:opacity-50"
+                            >
+                              {loadingToken === sub.id ? <Spinner size={11} /> : <Settings2 size={11} />}
+                              {sub.nombre}
+                              <ExternalLink size={10} className="opacity-60" />
+                            </button>
+                          ))}
+                          {!(m.submodulos || []).some((s: any) => s.url && s.activo) && (
+                            <span className="text-[10px] text-slate-400 italic">Sin URL</span>
                           )}
                         </div>
                       </td>
@@ -417,9 +460,10 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
+                  );
+                })}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={4} className="td text-center py-16 text-slate-400">
+                  <tr><td colSpan={5} className="td text-center py-16 text-slate-400">
                     <div className="text-3xl mb-2">🧩</div>
                     <p className="font-medium">Sin módulos{search ? ' con ese filtro' : ' en el catálogo'}</p>
                   </td></tr>
