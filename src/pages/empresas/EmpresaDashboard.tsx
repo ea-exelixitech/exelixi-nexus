@@ -56,6 +56,7 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
   const [showUrlPanel, setShowUrlPanel] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'modules' | 'urls'>('overview');
   const [expandedModule, setExpandedModule] = useState<number | null>(null);
+  const [expandedUrlGroup, setExpandedUrlGroup] = useState<string | null>(null);
 
   const copyUrl = (url: string, subId: number) => {
     const doSet = () => { setCopiedUrl(subId); setTimeout(() => setCopiedUrl(null), 2000); };
@@ -806,24 +807,14 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                   <Globe size={13} />
                 </div>
                 <h3 className="text-sm font-bold" style={{ color: '#0C133A', fontFamily: 'var(--font-display)' }}>URLs de Acceso</h3>
-                <span className="text-xs text-slate-300 ml-1">·</span>
-                <span className="text-xs text-slate-500 font-medium">{totalActivos} activos de {totalSubs}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider"
-                  style={{ background: '#10B981', color: '#FFFFFF', boxShadow: '0 2px 4px rgba(16,185,129,0.3)' }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                  {totalActivos} ON
-                </span>
-                <span
-                  className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider"
-                  style={{ background: '#E2E8F0', color: '#64748B' }}
-                >
-                  {totalSubs - totalActivos} OFF
-                </span>
-              </div>
+              <span
+                className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider"
+                style={{ background: '#05C6DF', color: '#FFFFFF', boxShadow: '0 2px 4px rgba(5,198,223,0.3)' }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                {totalActivos} de {totalSubs} activas
+              </span>
             </div>
 
             {totalSubs === 0 ? (
@@ -838,95 +829,112 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                 <p className="text-xs text-slate-400 mt-1">Agrega URLs base en el catálogo de submódulos.</p>
               </div>
             ) : (
-              <div>
-                {groups.map((group, gi) => (
-                  <div key={gi}>
-                    <div
-                      className="flex items-center gap-2 px-5 py-2.5 bg-slate-50/60"
-                      style={{ borderBottom: '1px solid #EAECEF', borderTop: gi > 0 ? '1px solid #EAECEF' : 'none' }}
-                    >
-                      <span className="text-sm leading-none">{group.moduloIcon}</span>
-                      <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#0C133A' }}>
-                        {group.moduloNombre}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-semibold ml-auto">
-                        {group.subs.filter(s => s.activoEmpresa).length}/{group.subs.length} activos
-                      </span>
-                    </div>
-
-                    <div className="divide-y" style={{ borderColor: '#EAECEF' }}>
-                      {group.subs.map(sub => (
+              <div className="divide-y" style={{ borderColor: '#EAECEF' }}>
+                {groups.map((group, gi) => {
+                  const isExpanded = expandedUrlGroup === group.moduloNombre;
+                  const activeSubCount = group.subs.filter(s => s.activoEmpresa).length;
+                  return (
+                    <div key={gi} style={{ borderColor: '#EAECEF' }}>
+                      <div
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/60 transition-colors cursor-pointer"
+                        onClick={() => setExpandedUrlGroup(isExpanded ? null : group.moduloNombre)}
+                      >
+                        <ChevronRight
+                          size={14}
+                          className="text-slate-400 transition-transform shrink-0"
+                          style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                        />
                         <div
-                          key={sub.id}
-                          className={`flex items-center gap-4 px-5 py-3 hover:bg-slate-50/40 transition-colors ${!sub.activoEmpresa ? 'opacity-55' : ''}`}
+                          className="w-10 h-10 rounded-lg flex items-center justify-center text-xl shrink-0"
+                          style={{ background: '#E0F7FA', border: '1px solid #A5E6F0' }}
                         >
-                          <span
-                            className="w-2 h-2 rounded-full shrink-0"
-                            style={{
-                              background: sub.activoEmpresa ? '#10B981' : '#CBD5E1',
-                              boxShadow: sub.activoEmpresa ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none',
-                            }}
-                          />
-
-                          <div className="w-48 shrink-0">
-                            <p className="text-sm font-bold truncate" style={{ color: '#0C133A' }}>{sub.nombre}</p>
-                            <p className="text-[10px] uppercase tracking-wider font-bold mt-0.5" style={{ color: sub.activoEmpresa ? '#047857' : '#94A3B8' }}>
-                              {sub.activoEmpresa ? 'Activo' : 'Inactivo'}
-                            </p>
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            {(() => {
-                              const { base, hasToken } = prettyAccessUrl(sub.accessUrl);
-                              return (
-                                <div
-                                  className="flex items-center gap-2 px-3 py-2 rounded-md"
-                                  style={{ background: '#F8FAFC' }}
-                                  title={sub.accessUrl}
-                                >
-                                  <span className="font-mono text-[11px] truncate" style={{ color: '#475569' }}>
-                                    {base}
-                                  </span>
-                                  {hasToken && (
-                                    <span
-                                      className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-                                      style={{ background: '#E2E8F0', color: '#64748B' }}
-                                      title="La URL incluye un token de acceso cifrado (oculto). Usa Copiar para el enlace completo."
-                                    >
-                                      <Lock size={9} /> token
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              onClick={() => copyUrl(sub.accessUrl, sub.id)}
-                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all"
-                              style={copiedUrl === sub.id
-                                ? { background: '#05C6DF', color: '#FFFFFF' }
-                                : { background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569' }
-                              }
-                            >
-                              {copiedUrl === sub.id ? <><Check size={11} /> Copiada</> : <><Copy size={11} /> Copiar</>}
-                            </button>
-                            <a
-                              href={sub.accessUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all hover:bg-[#0C133A] hover:text-white hover:border-[#0C133A]"
-                              style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569' }}
-                            >
-                              <ExternalLink size={11} /> Abrir
-                            </a>
-                          </div>
+                          {group.moduloIcon}
                         </div>
-                      ))}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate" style={{ color: '#0C133A', fontFamily: 'var(--font-display)' }}>
+                            {group.moduloNombre}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                            <span><span className="font-bold" style={{ color: '#0891B2' }}>{activeSubCount}</span> de {group.subs.length} URLs en uso</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="divide-y bg-slate-50/40 border-t" style={{ borderColor: '#EAECEF' }}>
+                          {group.subs.map(sub => (
+                            <div
+                              key={sub.id}
+                              className={`flex items-center gap-4 px-5 py-3 transition-colors ${!sub.activoEmpresa ? 'opacity-55' : ''}`}
+                              style={{ paddingLeft: '70px' }}
+                            >
+                              <span
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{
+                                  background: sub.activoEmpresa ? '#10B981' : '#CBD5E1',
+                                  boxShadow: sub.activoEmpresa ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none',
+                                }}
+                              />
+
+                              <div className="w-48 shrink-0">
+                                <p className="text-sm font-bold truncate" style={{ color: '#0C133A' }}>{sub.nombre}</p>
+                                <p className="text-[10px] uppercase tracking-wider font-bold mt-0.5" style={{ color: sub.activoEmpresa ? '#047857' : '#94A3B8' }}>
+                                  {sub.activoEmpresa ? 'Activo' : 'Inactivo'}
+                                </p>
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                {(() => {
+                                  const { base, hasToken } = prettyAccessUrl(sub.accessUrl);
+                                  return (
+                                    <div
+                                      className="flex items-center gap-2 px-3 py-2 rounded-md"
+                                      style={{ background: '#FFFFFF', border: '1px solid #EAECEF' }}
+                                      title={sub.accessUrl}
+                                    >
+                                      <span className="font-mono text-[11px] truncate" style={{ color: '#475569' }}>
+                                        {base}
+                                      </span>
+                                      {hasToken && (
+                                        <span
+                                          className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                                          style={{ background: '#E2E8F0', color: '#64748B' }}
+                                          title="La URL incluye un token de acceso cifrado (oculto). Usa Copiar para el enlace completo."
+                                        >
+                                          <Lock size={9} /> token
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={() => copyUrl(sub.accessUrl, sub.id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-slate-100"
+                                  style={{ color: '#64748B', border: '1px solid #EAECEF', background: '#FFFFFF' }}
+                                >
+                                  {copiedUrl === sub.id ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                                  {copiedUrl === sub.id ? 'Copiado' : 'Copiar'}
+                                </button>
+                                <a
+                                  href={sub.accessUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-slate-100"
+                                  style={{ color: '#64748B', border: '1px solid #EAECEF', background: '#FFFFFF' }}
+                                >
+                                  <ExternalLink size={12} /> Abrir
+                                </a>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
