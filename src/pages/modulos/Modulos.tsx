@@ -293,7 +293,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                               title={`Parametrizar ${sub.nombre}`}
                               disabled={loadingToken === sub.id}
                               onClick={() => abrirParametrizador(sub, productoMod)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-semibold transition-colors disabled:opacity-50"
+                              className="btn-secondary inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold transition-colors disabled:opacity-50"
                             >
                               {loadingToken === sub.id ? <Spinner size={11} /> : <Settings2 size={11} />}
                               {sub.nombre}
@@ -308,7 +308,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                     </tr>
                     {editId === m.id && (
                       <tr>
-                        <td colSpan={4} className="bg-slate-50/50 border-b border-slate-100 p-0">
+                        <td colSpan={5} className="bg-slate-50/50 border-b border-slate-100 p-0">
                           <div className="p-5 bg-white border border-slate-200 rounded-xl m-4 shadow-sm">
                             
                             {/* Editar Nombre del Módulo */}
