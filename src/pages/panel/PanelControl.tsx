@@ -61,6 +61,8 @@ interface Submodulo {
   nombre: string;
   activo: boolean;
   activoEmpresa: boolean;
+  url?: string | null;
+  accessUrl?: string | null;
 }
 
 interface ModuloEmpresa {
@@ -87,6 +89,7 @@ interface Empresa {
 }
 
 interface FlowStatus {
+  moduloGroupId?: number;
   allModulesActive: boolean;
   fullFlowUrl: string;
   modules: { id: number; nombre: string; orden: number; url: string; activo: boolean }[];
@@ -159,8 +162,12 @@ function ModuloCard({
   const submodulosActivosGlobalmente = submodulosGlobales.filter((s) => s.activo !== false);
   const submodulosActivos = submodulosGlobales.filter((s) => s.activoEmpresa);
   const hasSubmodulos = submodulosActivosGlobalmente.length > 0;
-  const { online, recheck } = useModuleHealth(mod.url, isModActive);
-  const networkUrl = mod.url?.replace('localhost', networkIp || 'localhost');
+  const moduleUrl =
+    mod.url ??
+    submodulosGlobales.find((s) => s.url)?.url ??
+    undefined;
+  const { online, recheck } = useModuleHealth(moduleUrl, isModActive);
+  const networkUrl = moduleUrl?.replace('localhost', networkIp || 'localhost');
 
   return (
     <div
@@ -201,7 +208,7 @@ function ModuloCard({
               <span className="text-xs text-slate-400">Módulo desactivado</span>
             )}
             {/* Indicador live */}
-            {mod.url && isModActive && (
+            {moduleUrl && isModActive && (
               <span
                 className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full cursor-pointer"
                 style={online === true
@@ -231,11 +238,11 @@ function ModuloCard({
       </div>
 
       {/* Botones Ver en vivo */}
-      {mod.url && (
+      {moduleUrl && (
         <div className="px-5 pb-3 flex flex-wrap gap-2">
           {/* Local */}
           <a
-            href={online === false ? undefined : mod.url}
+            href={online === false ? undefined : moduleUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={e => (!isModActive || online === false) && e.preventDefault()}
@@ -247,12 +254,12 @@ function ModuloCard({
             title={online === false ? 'Módulo no disponible — inicia el servidor primero' : 'Abrir en este equipo'}
           >
             <ExternalLink size={11} />
-            Local — {mod.url}
+            Local — {moduleUrl}
             {online === false && <AlertCircle size={10} className="text-red-400" />}
           </a>
 
           {/* Red */}
-          {networkIp && networkUrl !== mod.url && (
+          {networkIp && networkUrl !== moduleUrl && (
             <a
               href={online === false ? undefined : networkUrl}
               target="_blank"
@@ -385,13 +392,12 @@ export default function PanelControl({
     try {
       const [compRes, flowRes] = await Promise.all([
         companiesApi.detalle(id.toString()),
-        api.get('/modules/flow-status').catch(() => null),
+        api.get(`/modules/flow-status?empresaId=${id}`).catch(() => null),
       ]);
       const data: Empresa = compRes.data?.data || compRes.data;
       setEmpresa(data);
-      if (flowRes) {
-        setFlowStatus(flowRes.data?.data || null);
-      }
+      const flowData = flowRes?.data?.data;
+      setFlowStatus(flowData?.modules?.length ? flowData : null);
     } catch {
       toast('Error al cargar módulos de la empresa', 'error');
     } finally {
@@ -628,8 +634,15 @@ export default function PanelControl({
               {flowStatus.allModulesActive && (
                 <button
                   onClick={async () => {
+                    if (!selectedEmpresaId || !flowStatus?.moduloGroupId) {
+                      toast('Falta empresa o grupo de módulos RCV', 'error');
+                      return;
+                    }
                     try {
-                      const r = await api.post('/flow/start');
+                      const r = await api.post('/flow/start', {
+                        empresaId: selectedEmpresaId,
+                        moduloGroupId: flowStatus.moduloGroupId,
+                      });
                       const url = r.data?.data?.firstUrl;
                       if (url) {
                         window.open(url, '_blank', 'noopener,noreferrer');
@@ -637,8 +650,11 @@ export default function PanelControl({
                         toast('No se pudo iniciar el flujo encadenado', 'error');
                       }
                     } catch {
-                      // Fallback al monolítico si el bridge falla
-                      window.open(flowStatus.fullFlowUrl, '_blank', 'noopener,noreferrer');
+                      if (flowStatus.fullFlowUrl) {
+                        window.open(flowStatus.fullFlowUrl, '_blank', 'noopener,noreferrer');
+                      } else {
+                        toast('No se pudo iniciar el flujo encadenado', 'error');
+                      }
                     }
                   }}
                   className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-bold transition-all shadow-sm hover:shadow-lg hover:scale-105"
