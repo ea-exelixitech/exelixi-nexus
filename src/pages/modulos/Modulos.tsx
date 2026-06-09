@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { modulesApi, configApi } from '../../api';
-import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink } from 'lucide-react';
+import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink, Shield, FileText, LayoutList, CreditCard } from 'lucide-react';
 import { Spinner, ConfirmDialog } from '../../components/ui';
 
 const formatNombre = (value: string) => {
@@ -285,23 +285,36 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                           )}
                         </div>
                       </td>
-                      <td className="td text-center">
-                        <div className="flex flex-wrap gap-1.5 justify-center">
-                          {(m.submodulos || []).filter((s: any) => s.url && s.activo).map((sub: any) => (
-                            <button
-                              key={sub.id}
-                              title={`Parametrizar ${sub.nombre}`}
-                              disabled={loadingToken === sub.id}
-                              onClick={() => abrirParametrizador(sub, productoMod)}
-                              className="btn-secondary inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold transition-colors disabled:opacity-50"
-                            >
-                              {loadingToken === sub.id ? <Spinner size={11} /> : <Settings2 size={11} />}
-                              {sub.nombre}
-                              <ExternalLink size={10} className="opacity-60" />
-                            </button>
-                          ))}
+                      <td className="td text-left align-top max-w-[280px]">
+                        <div className="flex flex-wrap gap-2 justify-start">
+                          {(m.submodulos || []).filter((s: any) => s.url && s.activo).map((sub: any) => {
+                            const n = sub.nombre.toLowerCase();
+                            let Icono = Settings2;
+                            if (n.includes('ocr')) Icono = FileText;
+                            else if (n.includes('formulario')) Icono = LayoutList;
+                            else if (n.includes('emision')) Icono = Shield;
+                            else if (n.includes('pago')) Icono = CreditCard;
+
+                            const colorClass = productoMod === 'funerario' 
+                              ? 'bg-fuchsia-50/80 text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-100 hover:border-fuchsia-300 shadow-fuchsia-500/10'
+                              : 'bg-sky-50/80 text-sky-700 border-sky-200 hover:bg-sky-100 hover:border-sky-300 shadow-sky-500/10';
+
+                            return (
+                              <button
+                                key={sub.id}
+                                title={`Parametrizar ${sub.nombre}`}
+                                disabled={loadingToken === sub.id}
+                                onClick={() => abrirParametrizador(sub, productoMod)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border rounded-xl backdrop-blur-sm shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 ${colorClass}`}
+                              >
+                                {loadingToken === sub.id ? <Spinner size={12} /> : <Icono size={12} />}
+                                {sub.nombre}
+                                <ExternalLink size={10} className="opacity-60 ml-0.5" />
+                              </button>
+                            );
+                          })}
                           {!(m.submodulos || []).some((s: any) => s.url && s.activo) && (
-                            <span className="text-[10px] text-slate-400 italic">Sin URL</span>
+                            <span className="text-[10px] text-slate-400 italic px-2 py-1">Sin URL configurable</span>
                           )}
                         </div>
                       </td>
