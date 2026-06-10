@@ -17,6 +17,7 @@ import MiPerfil from './pages/usuarios/MiPerfil.tsx';
 import EmpresaDashboard from './pages/empresas/EmpresaDashboard';
 import EmpresaCrear from './pages/empresas/EmpresaCrear';
 import PanelControl from './pages/panel/PanelControl';
+import Trafico from './pages/trafico/Trafico';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard stats={stats} user={user} />} />
           <Route path="/panel" element={<PanelControl toast={showToast} />} />
+          <Route path="/trafico" element={<Trafico toast={showToast} />} />
           <Route path="/empresas" element={<Empresas toast={showToast} />} />
           <Route path="/empresas/nueva" element={<EmpresaCrear toast={showToast} />} />
           <Route path="/empresas/:id" element={<EmpresaDashboard toast={showToast} />} />

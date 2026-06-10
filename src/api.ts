@@ -78,4 +78,20 @@ export const configApi = {
   generarToken: (empresaId: number, producto: string, modulo: string) =>
     api.get(`/config/token/${empresaId}/${producto}/${modulo}`),
 };
+export const emisionesApi = {
+  trafico: (desde?: string, hasta?: string) => {
+    const params = new URLSearchParams();
+    if (desde) params.set('desde', desde);
+    if (hasta) params.set('hasta', hasta);
+    return api.get(`/emisiones/trafico?${params.toString()}`);
+  },
+  porEmpresa: (empresaId: number, desde?: string, hasta?: string) => {
+    const params = new URLSearchParams();
+    if (desde) params.set('desde', desde);
+    if (hasta) params.set('hasta', hasta);
+    return api.get(`/emisiones/empresa/${empresaId}?${params.toString()}`);
+  },
+  registrar: (data: Record<string, unknown>) => api.post('/emisiones', data),
+};
+
 export default api;

@@ -3,12 +3,13 @@ import { useLocation, Link, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, Building2, Users, Key, Blocks,
   X, LogOut, Menu, Mail, Briefcase, ChevronLeft, ChevronRight,
-  SlidersHorizontal,
+  SlidersHorizontal, TrendingUp,
 } from 'lucide-react';
 import { ConfirmDialog, Modal } from './ui';
 
 const NAV_ITEMS = [
   { id: 'dashboard',  label: 'Dashboard',         icon: LayoutDashboard,   path: '/dashboard' },
+  { id: 'trafico',    label: 'Tráfico',            icon: TrendingUp,        path: '/trafico' },
   { id: 'panel',      label: 'Panel de Control',   icon: SlidersHorizontal, path: '/panel' },
   { id: 'empresas',   label: 'Empresas',           icon: Building2,         path: '/empresas' },
   { id: 'usuarios',   label: 'Usuarios',           icon: Users,             path: '/usuarios' },
