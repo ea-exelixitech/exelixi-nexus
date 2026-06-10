@@ -36,6 +36,7 @@ interface EmpresaTrafico {
   empresaId: number;
   empresaNombre: string;
   empresaRif: string;
+  feeTransaccion: number;
   total: number;
   porProducto: Record<string, number>;
   polizas: Poliza[];
@@ -53,6 +54,8 @@ export default function Trafico({ toast }: { toast?: (msg: string, type: 'succes
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [expandedEmpresa, setExpandedEmpresa] = useState<number | null>(null);
+  const [editingFeeId, setEditingFeeId] = useState<number | null>(null);
+  const [feeValue, setFeeValue] = useState<string>('');
 
   const cargar = async () => {
     setLoading(true);
@@ -77,6 +80,24 @@ export default function Trafico({ toast }: { toast?: (msg: string, type: 'succes
 
   const toggleEmpresa = (id: number) =>
     setExpandedEmpresa(prev => (prev === id ? null : id));
+
+  const handleSaveFee = async (empresaId: number) => {
+    try {
+      const val = parseFloat(feeValue);
+      if (isNaN(val) || val < 0 || val > 100) {
+        toast?.('La tarifa debe estar entre 0 y 100$', 'error');
+        return;
+      }
+      await api.put(`/companies/${empresaId}`, { feeTransaccion: val });
+      toast?.('Tarifa actualizada correctamente', 'success');
+      setEditingFeeId(null);
+      cargar();
+    } catch (err) {
+      toast?.('Error al guardar la tarifa', 'error');
+    }
+  };
+
+  const totalIngresos = data?.empresas.reduce((acc, emp) => acc + (emp.total * (emp.feeTransaccion || 0)), 0) || 0;
 
   return (
     <div className="space-y-6">
@@ -261,7 +282,31 @@ export default function Trafico({ toast }: { toast?: (msg: string, type: 'succes
                   className="text-3xl font-bold"
                   style={{ color: C.oxford, fontFamily: 'var(--font-display)' }}
                 >
-                  {(data.totalEmisiones / data.empresas.length).toFixed(1)}
+                  {Math.round(data.totalEmisiones / data.empresas.length)}
+                </p>
+              </div>
+            </div>
+
+            {/* Total Ingresos Estimados */}
+            <div
+              className="p-5 rounded-2xl flex items-center gap-4"
+              style={{ background: '#fff', border: '1px solid #EAECEF' }}
+            >
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: '#F0FDF4' }}
+              >
+                <span className="text-emerald-500 font-bold text-xl">$</span>
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                  Ingreso Estimado
+                </p>
+                <p
+                  className="text-3xl font-bold text-emerald-600"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  ${totalIngresos.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -312,7 +357,7 @@ export default function Trafico({ toast }: { toast?: (msg: string, type: 'succes
                     </div>
 
                     {/* Chips de productos */}
-                    <div className="hidden sm:flex flex-wrap gap-1.5 max-w-[220px]">
+                    <div className="hidden sm:flex flex-wrap gap-1.5 max-w-[180px]">
                       {Object.entries(empresa.porProducto).map(([prod, cnt]) => (
                         <span
                           key={prod}
@@ -327,7 +372,54 @@ export default function Trafico({ toast }: { toast?: (msg: string, type: 'succes
                       ))}
                     </div>
 
-                    {/* Total */}
+                    {/* Fee de Transacción */}
+                    <div className="flex flex-col items-end shrink-0" onClick={e => e.stopPropagation()}>
+                      {editingFeeId === empresa.empresaId ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 text-sm">$</span>
+                          <input 
+                            type="number"
+                            min="0"
+                            max="100"
+                            className="input py-1 px-2 w-16 text-sm text-center"
+                            value={feeValue}
+                            onChange={(e) => setFeeValue(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveFee(empresa.empresaId)}
+                            autoFocus
+                          />
+                          <button 
+                            className="btn-primary py-1 px-2 text-xs"
+                            onClick={() => handleSaveFee(empresa.empresaId)}
+                          >
+                            Guardar
+                          </button>
+                          <button 
+                            className="text-slate-400 hover:text-slate-600 px-1"
+                            onClick={() => setEditingFeeId(null)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <div 
+                          className="flex flex-col items-end cursor-pointer group"
+                          onClick={() => {
+                            setEditingFeeId(empresa.empresaId);
+                            setFeeValue(String(empresa.feeTransaccion || 0));
+                          }}
+                          title="Hacer clic para editar la tarifa por transacción"
+                        >
+                          <p className="text-[10px] text-slate-400 uppercase tracking-wide group-hover:text-sky-500 flex items-center gap-1">
+                            Tarifa/Tx <span className="hidden group-hover:inline">✏️</span>
+                          </p>
+                          <p className="font-bold text-sm" style={{ color: C.oxford }}>
+                            ${Number(empresa.feeTransaccion || 0).toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Total Polizas */}
                     <div className="text-right shrink-0 ml-2">
                       <p
                         className="text-2xl font-bold"
@@ -336,6 +428,17 @@ export default function Trafico({ toast }: { toast?: (msg: string, type: 'succes
                         {empresa.total}
                       </p>
                       <p className="text-[10px] text-slate-400 uppercase tracking-wide">pólizas</p>
+                    </div>
+
+                    {/* Ingreso Total Empresa */}
+                    <div className="text-right shrink-0 ml-4 hidden sm:block">
+                      <p
+                        className="text-xl font-bold text-emerald-600"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                      >
+                        ${(empresa.total * (empresa.feeTransaccion || 0)).toFixed(2)}
+                      </p>
+                      <p className="text-[10px] text-emerald-600/70 uppercase tracking-wide">a facturar</p>
                     </div>
 
                     {/* Toggle icon */}
