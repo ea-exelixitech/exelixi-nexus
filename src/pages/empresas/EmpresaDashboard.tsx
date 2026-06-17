@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { companiesApi, modulesApi } from '../../api';
 import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal, Lock } from 'lucide-react';
 import { Spinner, BADGE, ConfirmDialog } from '../../components/ui';
+import { GenerateApiKeyButton } from './GenerateApiKeyButton';
 
 const formatRif = (value: string) => {
   let val = value.toUpperCase().replace(/[^VEJG0-9]/g, '');
@@ -505,6 +506,15 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="mt-5">
+              <GenerateApiKeyButton 
+                empresaId={Number(company.id)} 
+                currentApiKey={company.apiKey} 
+                toast={toast} 
+                onRefresh={load} 
+              />
             </div>
           </div>
 

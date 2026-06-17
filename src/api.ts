@@ -47,6 +47,7 @@ export const companiesApi = {
   eliminar: (id: string) => api.delete(`/companies/${id}`),
   toggleModule: (d: { empresaId: number; moduloId: number; active: boolean }) => api.post('/companies/toggle-module', d),
   toggleSubmodule: (d: { empresaId: number; submoduloId: number; active: boolean }) => api.post('/companies/toggle-submodule', d),
+  generateApiKey: (id: number) => api.post(`/companies/${id}/generate-api-key`),
 };
 export const modulesApi = {
   listarActivos: () => api.get('/modules'),
