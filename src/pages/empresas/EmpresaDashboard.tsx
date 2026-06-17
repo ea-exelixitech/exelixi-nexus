@@ -80,9 +80,9 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
     document.body.removeChild(ta);
   };
 
-  const load = () => {
+  const load = (showSpinner = true) => {
     if (!id) return;
-    setLoading(true);
+    if (showSpinner) setLoading(true);
     Promise.all([
       companiesApi.detalle(id).catch(() => null),
       modulesApi.listarTodos().catch(() => ({ data: [] }))
@@ -99,10 +99,12 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
       const mods = m.data?.data || m.data || [];
       // Mostrar solo módulos activos globalmente
       setAllModules(mods.filter((x: any) => x.activo));
-    }).finally(() => setLoading(false));
+    }).finally(() => {
+      if (showSpinner) setLoading(false);
+    });
   };
 
-  useEffect(load, [id]);
+  useEffect(() => { load(); }, [id]);
 
   const guardarDetalles = async (e: FormEvent) => {
     e.preventDefault();
@@ -513,7 +515,7 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
                 empresaId={Number(company.id)} 
                 currentApiKey={company.apiKey} 
                 toast={toast} 
-                onRefresh={load} 
+                onRefresh={() => load(false)} 
               />
             </div>
           </div>
