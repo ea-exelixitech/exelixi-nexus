@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { companiesApi, modulesApi } from '../../api';
-import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal, Lock } from 'lucide-react';
+import { X, Pencil, Copy, Check, Link2, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, Building2, Shield, Layers, Globe, ToggleLeft, ToggleRight, Hash, Briefcase, Activity, MoreHorizontal, Lock, Plug } from 'lucide-react';
 import { Spinner, BADGE, ConfirmDialog } from '../../components/ui';
 import { GenerateApiKeyButton } from './GenerateApiKeyButton';
 
@@ -510,13 +510,20 @@ export default function EmpresaDashboard({ toast }: { toast: (m: string, t: 'suc
               </div>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap gap-3 items-center">
               <GenerateApiKeyButton 
                 empresaId={Number(company.id)} 
                 currentApiKey={company.apiKey} 
                 toast={toast} 
                 onRefresh={() => load(false)} 
               />
+              <button
+                onClick={() => navigate(`/empresas/${company.id}/conexiones`)}
+                className="btn-secondary flex items-center gap-2 text-sm"
+              >
+                <Plug size={15} />
+                Conexiones de aplicaciones
+              </button>
             </div>
           </div>
 

@@ -16,6 +16,7 @@ import UsuarioCrear from './pages/usuarios/UsuarioCrear';
 import MiPerfil from './pages/usuarios/MiPerfil.tsx';
 import EmpresaDashboard from './pages/empresas/EmpresaDashboard';
 import EmpresaCrear from './pages/empresas/EmpresaCrear';
+import ConexionesApp from './pages/empresas/ConexionesApp';
 import PanelControl from './pages/panel/PanelControl';
 import Trafico from './pages/trafico/Trafico';
 
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="/empresas" element={<Empresas toast={showToast} />} />
           <Route path="/empresas/nueva" element={<EmpresaCrear toast={showToast} />} />
           <Route path="/empresas/:id" element={<EmpresaDashboard toast={showToast} />} />
+          <Route path="/empresas/:id/conexiones" element={<ConexionesApp toast={showToast} />} />
           <Route path="/modulos" element={<Modulos toast={showToast} />} />
           <Route path="/modulos/nuevo" element={<ModuloCrear toast={showToast} />} />
           <Route path="/roles" element={<Roles toast={showToast} />} />
