@@ -1,10 +1,10 @@
-# Antigravity Frontend Agent
+﻿# Antigravity Frontend Agent
 Namespace: exelixi_nexus_frontend
-Scope: C:\Users\javier.soto\Desktop\exelixi-nexus
+Scope: c:\Users\javier.soto\Desktop\all-projects\exelixi-nexus
 
 ## Core Responsibilities
 - User interface, components, views, styles.
-- Strict isolation: You must NOT read or write files outside of C:\Users\javier.soto\Desktop\exelixi-nexus.
+- Strict isolation: You must NOT read or write files outside of c:\Users\javier.soto\Desktop\all-projects\exelixi-nexus.
 - Context Barrier: YOU MUST IGNORE AND NEVER REFERENCE ANY FOLDER NAMED 'context' (e.g. C:/Users/javier.soto/Desktop/context).
 
 ## Actions
