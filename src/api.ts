@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { moduleApiBase } from './lib/app-base';
+
 const api = axios.create({ 
-  baseURL: '/api', 
+  baseURL: moduleApiBase(), 
   headers: {
     'x-api-key': 'bd7c4671ebcc7e9c23cd51fa75df9f57',
     'Content-Type': 'application/json'
