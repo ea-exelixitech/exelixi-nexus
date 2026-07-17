@@ -6,6 +6,7 @@ import {
   SlidersHorizontal, TrendingUp,
 } from 'lucide-react';
 import { ConfirmDialog, Modal } from './ui';
+import { publicAsset } from '../lib/app-base';
 
 const NAV_ITEMS = [
   { id: 'dashboard',  label: 'Dashboard',         icon: LayoutDashboard,   path: '/dashboard' },
@@ -67,14 +68,14 @@ export default function Layout({ user, onLogout }: { user: any; onLogout: () => 
           {isCollapsed ? (
             <div className="w-9 h-9 mx-auto flex items-center justify-center shrink-0">
               <img
-                src="/logo-dark-bg.png"
+                src={publicAsset('logo-dark-bg.png')}
                 alt="Exélixi"
                 className="h-8 w-auto object-contain"
               />
             </div>
           ) : (
             <img
-              src="/logo-dark-bg.png"
+              src={publicAsset('logo-dark-bg.png')}
               alt="Exélixi Technology"
               className="h-10 w-auto object-contain"
             />

@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import { authApi, setToken } from '../api';
 import { Eye, EyeOff, Shield, ArrowRight } from 'lucide-react';
 import { Spinner } from '../components/ui';
+import { publicAsset } from '../lib/app-base';
 
 const C = {
   oxford:  '#0C133A',
@@ -103,7 +104,7 @@ export default function Login({ onLogin }: { onLogin: (u: any, token: string) =>
         {/* Logo + heading */}
         <div className="relative z-10">
           <img
-            src="/logo-dark-bg.png"
+            src={publicAsset('logo-dark-bg.png')}
             alt="Exélixi Technology"
             className="h-14 w-auto object-contain mb-16"
           />
@@ -185,7 +186,7 @@ export default function Login({ onLogin }: { onLogin: (u: any, token: string) =>
           {/* Logo mobile */}
           <div className="lg:hidden mb-10 flex items-center gap-3">
             <img
-              src="/logo-color.png"
+              src={publicAsset('logo-color.png')}
               alt="Exélixi"
               className="h-10 w-auto object-contain"
             />
