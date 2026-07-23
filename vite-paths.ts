@@ -1,25 +1,28 @@
 /** Utilidades compartidas: base path HTTPS (cierrelmds) en vite.config. */
 
+/** Prefijo público del admin tras Apache (solo documentación / `<base href>`). */
+export const PROD_ADMIN_PUBLIC_PREFIX = '/admin/';
+
 /**
  * Base de Vite en build.
  *
  * - Dev: `/`
- * - Prod cierrelmds: `/admin/` (rutas absolutas a assets; evita 404 en `/admin/empresas/…`)
- * - Override: `VITE_APP_BASE=/otro/` si el admin vive en otro subpath
+ * - Prod cierrelmds (Apache strip `/admin/` → :5200/`): `./` + `<base href="/admin/">` en index
+ * - Prod subpath sin strip: `VITE_APP_BASE=/ocr/` etc.
+ *
+ * No usar `base: '/admin/'` con Apache strip: vite preview redirige en bucle (302).
  */
 export function resolveAppBase(
   env: Record<string, string>,
   mode: string = 'development',
 ): string {
   const raw = env.VITE_APP_BASE?.trim();
-  if (raw === './' || raw === '.') {
-    // Legacy relativo — rompe assets en rutas profundas del SPA; preferir /admin/
-    return mode === 'production' ? '/admin/' : '/';
-  }
+  if (raw === './' || raw === '.') return './';
+  if (raw === '/admin/' || raw === '/admin') return './';
   if (raw && raw !== '/') {
     return raw.endsWith('/') ? raw : `${raw}/`;
   }
-  if (mode === 'production') return '/admin/';
+  if (mode === 'production') return './';
   return '/';
 }
 

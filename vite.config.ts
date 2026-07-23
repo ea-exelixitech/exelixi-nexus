@@ -1,6 +1,25 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import { prefixDevProxy, resolveAppBase } from './vite-paths';
+import {
+  prefixDevProxy,
+  PROD_ADMIN_PUBLIC_PREFIX,
+  resolveAppBase,
+} from './vite-paths';
+
+/** Con Apache strip: assets relativos + base href = /admin/assets en rutas profundas. */
+function adminPublicBaseHref(mode: string, base: string): Plugin {
+  return {
+    name: 'admin-public-base-href',
+    transformIndexHtml(html) {
+      if (mode !== 'production' || base !== './') return html;
+      if (/<base\s/i.test(html)) return html;
+      return html.replace(
+        '<head>',
+        `<head>\n    <base href="${PROD_ADMIN_PUBLIC_PREFIX}" />`,
+      );
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -13,7 +32,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base,
-    plugins: [react()],
+    plugins: [react(), adminPublicBaseHref(mode, base)],
     server: {
       port: 5200,
       host: true,
