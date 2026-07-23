@@ -144,6 +144,10 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   const guardarSubmodulo = async (e: React.FormEvent, subId: number | null) => {
     e.preventDefault();
     if (!subForm.moduloId) return;
+    if (!subForm.url.trim()) {
+      toast('La URL pública del submódulo es obligatoria (base del front / reporte).', 'error');
+      return;
+    }
     setConfirmData({
       title: subId ? 'Guardar cambios' : 'Crear submódulo',
       msg: subId ? '¿Estás seguro que deseas actualizar este submódulo?' : '¿Estás seguro que deseas registrar este nuevo submódulo?',
@@ -151,10 +155,10 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
         setSavingSub(true);
         try {
           if (subId) {
-            await modulesApi.actualizarSubmodulo(subId.toString(), { nombre: subForm.nombre, url: subForm.url || null });
+            await modulesApi.actualizarSubmodulo(subId.toString(), { nombre: subForm.nombre, url: subForm.url.trim() });
             toast('Submódulo actualizado con éxito', 'success');
           } else {
-            await modulesApi.crearSubmodulo({ nombre: subForm.nombre, url: subForm.url || null, moduloId: subForm.moduloId });
+            await modulesApi.crearSubmodulo({ nombre: subForm.nombre, url: subForm.url.trim(), moduloId: subForm.moduloId });
             toast('Submódulo creado con éxito', 'success');
           }
           setEditSubId(null);
@@ -383,7 +387,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                                   className="input text-xs py-1.5 px-2.5 flex-1 font-mono" 
                                                   value={subForm.url} 
                                                   onChange={e => setSubForm(p => ({ ...p, url: e.target.value.trim() }))} 
-                                                  placeholder="URL del servicio (ej: http://192.168.8.120:5300)" 
+                                                  placeholder="URL pública * (https://…/RPT_…)" 
                                                   type="url"
                                                 />
                                               </div>
@@ -464,7 +468,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                             className="input text-xs py-1.5 px-2.5 w-full font-mono border-orange-200 focus:border-orange-500" 
                                             value={subForm.url} 
                                             onChange={e => setSubForm(p => ({ ...p, url: e.target.value.trim() }))} 
-                                            placeholder="URL del servicio (ej: http://192.168.8.120:5300)" 
+                                            placeholder="URL pública * (https://…/RPT_…)" 
                                             type="url"
                                           />
                                           <div className="flex gap-1.5 justify-end">

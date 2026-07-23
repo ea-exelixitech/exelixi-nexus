@@ -14,7 +14,10 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ nombre: '' });
-  const [submodulos, setSubmodulos] = useState<{ id: string, nombre: string, url: string }[]>([]);
+  /** Al menos un submódulo con URL pública (Nexus arma ?nexus_token= sobre esta base). */
+  const [submodulos, setSubmodulos] = useState<{ id: string, nombre: string, url: string }[]>(() => [
+    { id: '1', nombre: '', url: '' },
+  ]);
   const [confirmData, setConfirmData] = useState<{ title?: string; msg: string; type?: 'primary' | 'danger'; action: () => void } | null>(null);
   const [handoff, setHandoff] = useState<{ moduloNombre: string; subs: SubmoduloIntegracion[] } | null>(null);
 
@@ -35,9 +38,27 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
   const guardar = async (e: FormEvent) => {
     e.preventDefault();
 
+    const subsValidos = submodulos.filter(
+      (s) => s.nombre.trim() && s.url.trim(),
+    );
+    if (subsValidos.length === 0) {
+      toast(
+        'Agregue al menos un submódulo con nombre y URL pública (donde vive el front del reporte o app).',
+        'error',
+      );
+      return;
+    }
+    const incompletos = submodulos.some(
+      (s) => (s.nombre.trim() && !s.url.trim()) || (!s.nombre.trim() && s.url.trim()),
+    );
+    if (incompletos) {
+      toast('Cada submódulo debe tener nombre y URL, o elimínelo.', 'error');
+      return;
+    }
+
     setConfirmData({
       title: 'Crear Módulo',
-      msg: '¿Estás seguro que deseas registrar este nuevo módulo global' + (submodulos.length > 0 ? ` y sus ${submodulos.length} submódulos` : '') + '?',
+      msg: `¿Registrar el módulo "${form.nombre.trim()}" y ${subsValidos.length} submódulo(s) con URL?`,
       action: async () => {
         setSaving(true);
         try {
@@ -50,10 +71,10 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
 
           if (submodulos.length > 0) {
             const results = await Promise.all(
-              submodulos.map((sub) =>
+              subsValidos.map((sub) =>
                 modulesApi.crearSubmodulo({
                   nombre: sub.nombre.trim(),
-                  url: sub.url || null,
+                  url: sub.url.trim(),
                   moduloId: Number(newModule.id),
                 }),
               ),
@@ -62,13 +83,13 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
               const row = r.data?.data ?? r.data;
               return {
                 id: Number(row.id),
-                nombre: row.nombre ?? submodulos[i].nombre,
-                url: row.url ?? (submodulos[i].url || null),
+                nombre: row.nombre ?? subsValidos[i].nombre,
+                url: row.url ?? subsValidos[i].url.trim(),
               };
             });
             setHandoff({ moduloNombre: form.nombre.trim(), subs: createdSubs });
           } else {
-            toast('Módulo creado con éxito', 'success');
+            toast('Módulo creado sin submódulos — agregue URL en Módulos → editar', 'success');
             navigate('/modulos');
           }
         } catch (err: any) {
@@ -127,7 +148,10 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h2 className="font-bold text-slate-900">Submódulos Asociados</h2>
-                  <p className="text-sm text-slate-400 mt-1 italic">Añada las funcionalidades específicas que compondrán este módulo.</p>
+                  <p className="text-sm text-slate-400 mt-1 italic">
+                    Obligatorio: al menos uno con <strong className="text-slate-600">URL pública</strong> del front
+                    (ej. reportes). Nexus genera enlaces con <code className="text-xs">?nexus_token=</code> sobre esa URL.
+                  </p>
                 </div>
                 <button type="button" onClick={addSubmodulo} className="btn-primary text-sm px-4 py-2 flex items-center gap-2" title="Añadir">
                   <Plus size={16} />
@@ -159,12 +183,16 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
                           <Trash2 size={18} />
                         </button>
                       </div>
+                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide px-1">
+                        URL pública del front *
+                      </label>
                       <input
                         className="input w-full text-xs font-mono border-slate-200 focus:border-orange-300 focus:ring-0"
                         value={sub.url}
                         onChange={e => updateSubmodulo(sub.id, 'url', e.target.value)}
-                        placeholder="URL del servicio (ej: http://192.168.10.215:5173)"
+                        placeholder="https://recibos.exelixitech.com/reportes/RPT_RECIBOS"
                         type="url"
+                        required={!!sub.nombre.trim()}
                       />
                     </div>
                   ))}

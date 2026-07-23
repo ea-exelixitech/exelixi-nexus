@@ -59,7 +59,7 @@ export const SEGURIDAD_INTEGRACION: readonly string[] = [
 ];
 
 export const PASOS_RAPIDOS: readonly string[] = [
-  'Módulos → crear módulo + submódulo con URL HTTPS pública.',
+  'Módulos → crear módulo + submódulo con URL HTTPS pública del front (no solo el nombre del módulo).',
   'Integración → copiar .env front/back y entregar carpeta sdk/nexus-guard/svelte/.',
   'Empresas → activar módulo y submódulo por cliente.',
   'Panel / SSO → abrir con ?nexus_token= o flujo API Key documentado.',
