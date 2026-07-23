@@ -1,5 +1,12 @@
+/** Prefijo público HTTPS del admin (Apache `/admin/` → vite en :5200/). */
+const PROD_PUBLIC_PREFIX = '/admin';
+
 function normalizedBase(): string {
-  return (import.meta.env.BASE_URL ?? '/').replace(/\/?$/, '/');
+  const base = import.meta.env.BASE_URL ?? '/';
+  if (base === './' || base === '.') {
+    return import.meta.env.PROD ? `${PROD_PUBLIC_PREFIX}/` : '/';
+  }
+  return base.replace(/\/?$/, '/');
 }
 
 /** Base URL del admin (Vite `base`). Ej. `/admin/` → API en `/admin/api`. */
@@ -10,6 +17,9 @@ export function moduleApiBase(): string {
 /** basename para react-router (sin barra final). */
 export function routerBasename(): string {
   const base = import.meta.env.BASE_URL ?? '/';
+  if (base === './' || base === '.') {
+    return import.meta.env.PROD ? PROD_PUBLIC_PREFIX : '';
+  }
   if (base === '/') return '';
   return base.replace(/\/$/, '');
 }

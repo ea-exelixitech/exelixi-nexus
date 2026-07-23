@@ -1,22 +1,28 @@
 /** Utilidades compartidas: base path HTTPS (cierrelmds) en vite.config. */
 
-/** Normaliza VITE_APP_BASE a formato Vite (`/` o `/admin/`). */
+/**
+ * Base de Vite en build.
+ *
+ * - Dev: `/`
+ * - Prod cierrelmds (Apache strip `/admin/` → :5200/`): `./` → assets en `/admin/assets/…`
+ * - Prod subpath explícito (`/ocr/`, `/admin/` sin strip): `VITE_APP_BASE=/ocr/` etc.
+ */
 export function resolveAppBase(
   env: Record<string, string>,
   mode: string = 'development',
 ): string {
   const raw = env.VITE_APP_BASE?.trim();
-  if (raw) {
-    if (raw === '/') {
-      return mode === 'production' ? '/admin/' : '/';
-    }
+  if (raw === './' || raw === '.') return './';
+  // Nexus admin en cierrelmds: Apache hace strip /admin/ → :5200/ (no usar base /admin/ en Vite)
+  if (raw === '/admin/' || raw === '/admin') return './';
+  if (raw && raw !== '/') {
     return raw.endsWith('/') ? raw : `${raw}/`;
   }
-  if (mode === 'production') return '/admin/';
+  if (mode === 'production') return './';
   return '/';
 }
 
-/** Prefija rutas de proxy cuando la app se sirve bajo un subpath. */
+/** Prefija rutas de proxy cuando la app se sirve bajo un subpath absoluto. */
 export function prefixDevProxy(
   base: string,
   routes: Record<string, { target: string; changeOrigin?: boolean }>,
@@ -24,7 +30,7 @@ export function prefixDevProxy(
   string,
   { target: string; changeOrigin?: boolean; rewrite?: (path: string) => string }
 > {
-  if (base === '/') return routes;
+  if (base === '/' || base === './') return routes;
 
   const root = base.replace(/\/$/, '');
   const out: Record<

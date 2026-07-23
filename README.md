@@ -107,8 +107,8 @@ Copiar desde `.env.example`. **No** commitear `.env`.
 | Emisión Plan | https://cierrelmds.exelixitech.com/emision/ |
 | Pagos Póliza | https://cierrelmds.exelixitech.com/pagos/ |
 
-Build producción (cierrelmds): `npm run build` usa base **`/admin/`** por defecto.  
-Build con raíz `/`: `VITE_APP_BASE=/ npm run build`.
+Build producción (cierrelmds): `npm run build` usa **`base: './'`** (assets bajo `/admin/assets/` con Apache strip).  
+Router y API usan prefijo `/admin`. Subpath absoluto: `VITE_APP_BASE=/admin/` solo si Apache **no** hace strip.
 
 ### Puertos PM2 (srv001)
 
