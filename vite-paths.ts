@@ -4,21 +4,22 @@
  * Base de Vite en build.
  *
  * - Dev: `/`
- * - Prod cierrelmds (Apache strip `/admin/` → :5200/`): `./` → assets en `/admin/assets/…`
- * - Prod subpath explícito (`/ocr/`, `/admin/` sin strip): `VITE_APP_BASE=/ocr/` etc.
+ * - Prod cierrelmds: `/admin/` (rutas absolutas a assets; evita 404 en `/admin/empresas/…`)
+ * - Override: `VITE_APP_BASE=/otro/` si el admin vive en otro subpath
  */
 export function resolveAppBase(
   env: Record<string, string>,
   mode: string = 'development',
 ): string {
   const raw = env.VITE_APP_BASE?.trim();
-  if (raw === './' || raw === '.') return './';
-  // Nexus admin en cierrelmds: Apache hace strip /admin/ → :5200/ (no usar base /admin/ en Vite)
-  if (raw === '/admin/' || raw === '/admin') return './';
+  if (raw === './' || raw === '.') {
+    // Legacy relativo — rompe assets en rutas profundas del SPA; preferir /admin/
+    return mode === 'production' ? '/admin/' : '/';
+  }
   if (raw && raw !== '/') {
     return raw.endsWith('/') ? raw : `${raw}/`;
   }
-  if (mode === 'production') return './';
+  if (mode === 'production') return '/admin/';
   return '/';
 }
 
