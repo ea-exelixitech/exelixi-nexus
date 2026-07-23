@@ -1,10 +1,19 @@
 /** Utilidades compartidas: base path HTTPS (cierrelmds) en vite.config. */
 
 /** Normaliza VITE_APP_BASE a formato Vite (`/` o `/admin/`). */
-export function resolveAppBase(env: Record<string, string>): string {
-  const raw = env.VITE_APP_BASE?.trim() || '/';
-  if (raw === '/') return '/';
-  return raw.endsWith('/') ? raw : `${raw}/`;
+export function resolveAppBase(
+  env: Record<string, string>,
+  mode: string = 'development',
+): string {
+  const raw = env.VITE_APP_BASE?.trim();
+  if (raw) {
+    if (raw === '/') {
+      return mode === 'production' ? '/admin/' : '/';
+    }
+    return raw.endsWith('/') ? raw : `${raw}/`;
+  }
+  if (mode === 'production') return '/admin/';
+  return '/';
 }
 
 /** Prefija rutas de proxy cuando la app se sirve bajo un subpath. */

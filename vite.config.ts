@@ -4,7 +4,7 @@ import { prefixDevProxy, resolveAppBase } from './vite-paths';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const base = resolveAppBase(env);
+  const base = resolveAppBase(env, mode);
   const apiTarget = env.VITE_API_URL || 'http://127.0.0.1:3092';
 
   const proxy = prefixDevProxy(base, {

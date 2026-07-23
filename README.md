@@ -107,7 +107,8 @@ Copiar desde `.env.example`. **No** commitear `.env`.
 | Emisión Plan | https://cierrelmds.exelixitech.com/emision/ |
 | Pagos Póliza | https://cierrelmds.exelixitech.com/pagos/ |
 
-Build: `VITE_APP_BASE=/admin/` (o `/ocr/`, …), `VITE_NEXUS_API_URL=https://cierrelmds.exelixitech.com/nexus-api`.
+Build producción (cierrelmds): `npm run build` usa base **`/admin/`** por defecto.  
+Build con raíz `/`: `VITE_APP_BASE=/ npm run build`.
 
 ### Puertos PM2 (srv001)
 
