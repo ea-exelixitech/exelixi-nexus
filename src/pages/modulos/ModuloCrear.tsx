@@ -1,8 +1,10 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { modulesApi } from '../../api';
-import { X, Plus, Trash2 } from 'lucide-react';
-import { Spinner, ConfirmDialog } from '../../components/ui';
+import { X, Plus, Trash2, Plug } from 'lucide-react';
+import { Spinner, ConfirmDialog, Modal } from '../../components/ui';
+import ModuloIntegracionPanel from '../../components/ModuloIntegracionPanel';
+import { PASOS_RAPIDOS, type SubmoduloIntegracion } from '../../lib/moduloIntegracion';
 
 const formatNombre = (value: string) => {
   return value.replace(/[^a-zA-Z\sáéíóúÁÉÍÓÚñÑüÜ]/g, '').substring(0, 50);
@@ -14,6 +16,7 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
   const [form, setForm] = useState({ nombre: '' });
   const [submodulos, setSubmodulos] = useState<{ id: string, nombre: string, url: string }[]>([]);
   const [confirmData, setConfirmData] = useState<{ title?: string; msg: string; type?: 'primary' | 'danger'; action: () => void } | null>(null);
+  const [handoff, setHandoff] = useState<{ moduloNombre: string; subs: SubmoduloIntegracion[] } | null>(null);
 
   const addSubmodulo = () => {
     setSubmodulos([...submodulos, { id: Date.now().toString(), nombre: '', url: '' }]);
@@ -46,18 +49,28 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
           }
 
           if (submodulos.length > 0) {
-            const promises = submodulos.map(sub =>
-              modulesApi.crearSubmodulo({
-                nombre: sub.nombre.trim(),
-                url: sub.url || null,
-                moduloId: Number(newModule.id)
-              })
+            const results = await Promise.all(
+              submodulos.map((sub) =>
+                modulesApi.crearSubmodulo({
+                  nombre: sub.nombre.trim(),
+                  url: sub.url || null,
+                  moduloId: Number(newModule.id),
+                }),
+              ),
             );
-            await Promise.all(promises);
+            const createdSubs: SubmoduloIntegracion[] = results.map((r, i) => {
+              const row = r.data?.data ?? r.data;
+              return {
+                id: Number(row.id),
+                nombre: row.nombre ?? submodulos[i].nombre,
+                url: row.url ?? (submodulos[i].url || null),
+              };
+            });
+            setHandoff({ moduloNombre: form.nombre.trim(), subs: createdSubs });
+          } else {
+            toast('Módulo creado con éxito', 'success');
+            navigate('/modulos');
           }
-
-          toast('Módulo creado con éxito', 'success');
-          navigate('/modulos');
         } catch (err: any) {
           toast(err.response?.data?.message || err.message || 'Error al crear módulo', 'error');
         } finally {
@@ -74,6 +87,11 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
         <div>
           <h3 className="text-xl font-extrabold text-slate-900">Nuevo Módulo</h3>
           <p className="text-slate-500 mt-1 italic">Ingrese el nombre del nuevo módulo global y sus submódulos.</p>
+          <ul className="mt-2 text-xs text-sky-800 list-disc list-inside space-y-0.5">
+            {PASOS_RAPIDOS.slice(0, 3).map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -176,6 +194,30 @@ export default function ModuloCrear({ toast }: { toast: (m: string, t: 'success'
           onConfirm={confirmData.action}
           onCancel={() => setConfirmData(null)}
         />
+      )}
+
+      {handoff && handoff.subs[0] && (
+        <Modal
+          title="Módulo creado — datos de integración"
+          onClose={() => {
+            setHandoff(null);
+            toast('Módulo creado con éxito', 'success');
+            navigate('/modulos');
+          }}
+          size="lg"
+        >
+          <p className="text-sm text-slate-600 mb-4">
+            Copie la configuración al equipo del microfrontend. Luego active el módulo por empresa en{' '}
+            <strong>Empresas</strong>.
+          </p>
+          <ModuloIntegracionPanel moduloNombre={handoff.moduloNombre} submodulo={handoff.subs[0]} />
+          {handoff.subs.length > 1 && (
+            <p className="text-xs text-slate-500 mt-4">
+              Hay {handoff.subs.length} submódulos: use el botón <Plug size={12} className="inline" /> Integración en
+              Módulos para los demás ids.
+            </p>
+          )}
+        </Modal>
       )}
     </div>
   );

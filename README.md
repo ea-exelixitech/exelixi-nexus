@@ -96,7 +96,20 @@ Copiar desde `.env.example`. **No** commitear `.env`.
 
 ## Despliegue en servidor
 
-Puertos recomendados en el mismo host que los módulos RCV:
+### Producción La Mundial (cierrelmds)
+
+| Servicio | URL HTTPS |
+| -------- | --------- |
+| **Admin (este repo)** | https://cierrelmds.exelixitech.com/admin/ |
+| API Nexus | https://cierrelmds.exelixitech.com/nexus-api/ |
+| OCR Documentos | https://cierrelmds.exelixitech.com/ocr/ |
+| Formulario | https://cierrelmds.exelixitech.com/formulario/ |
+| Emisión Plan | https://cierrelmds.exelixitech.com/emision/ |
+| Pagos Póliza | https://cierrelmds.exelixitech.com/pagos/ |
+
+Build: `VITE_APP_BASE=/admin/` (o `/ocr/`, …), `VITE_NEXUS_API_URL=https://cierrelmds.exelixitech.com/nexus-api`.
+
+### Puertos PM2 (srv001)
 
 | Servicio | Puerto |
 |----------|--------|
@@ -113,7 +126,8 @@ pm2 start ecosystem.config.cjs --env production
 
 El `ecosystem.config.js` usa `vite preview` con proxy `/api` → `127.0.0.1:3092`.
 
-URLs de submódulos en la BD (vía panel): `http://<IP_SERVIDOR>:5181` … `5180`.
+URLs de submódulos en la BD (panel o SQL):  
+`https://cierrelmds.exelixitech.com/ocr/` … `/pagos/` (como en Panel de control).
 
 ---
 

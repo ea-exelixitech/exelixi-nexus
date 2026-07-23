@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { modulesApi, configApi } from '../../api';
-import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink, Shield, FileText, LayoutList, CreditCard } from 'lucide-react';
-import { Spinner, ConfirmDialog } from '../../components/ui';
+import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink, Shield, FileText, LayoutList, CreditCard, Plug } from 'lucide-react';
+import { Spinner, ConfirmDialog, Modal } from '../../components/ui';
+import ModuloIntegracionPanel from '../../components/ModuloIntegracionPanel';
+import { PASOS_RAPIDOS } from '../../lib/moduloIntegracion';
 
 const formatNombre = (value: string) => {
   return value.replace(/[^a-zA-Z\sáéíóúÁÉÍÓÚñÑüÜ]/g, '').substring(0, 50);
@@ -24,6 +26,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   // Parametrizar state
   const [loadingToken, setLoadingToken] = useState<number | null>(null);
   const [parametrizarMod, setParametrizarMod] = useState<any>(null);
+  const [integracionSub, setIntegracionSub] = useState<{ moduloNombre: string; sub: any } | null>(null);
 
   // Inline submodule edit state
   const [editSubId, setEditSubId] = useState<number | 'new' | null>(null);
@@ -206,6 +209,15 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
             )}
           </div>
           <button className="btn-ghost ml-auto" onClick={load} title="Actualizar"><RefreshCw size={16} /></button>
+        </div>
+
+        <div className="mb-4 p-4 rounded-xl border border-sky-100 bg-sky-50/80 text-xs text-slate-700 space-y-1">
+          <p className="font-bold text-sky-900">Conectar un módulo nuevo (rápido y seguro)</p>
+          <ol className="list-decimal list-inside space-y-0.5 text-slate-600">
+            {PASOS_RAPIDOS.map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ol>
         </div>
         
         {loading ? (
@@ -400,6 +412,14 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                                           </td>
                                           <td className="td py-2 px-3 text-center">
                                             <div className="flex gap-1.5 justify-center">
+                                              <button
+                                                type="button"
+                                                className="p-1.5 rounded-md bg-orange-50 hover:bg-orange-100 text-orange-600 transition-colors"
+                                                title="Datos de integración (SDK, .env, id submódulo)"
+                                                onClick={() => setIntegracionSub({ moduloNombre: m.nombre, sub })}
+                                              >
+                                                <Plug size={14} />
+                                              </button>
                                               <button 
                                                 className="p-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" 
                                                 title="Editar" 
@@ -590,6 +610,23 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
             </div>
           </div>
         </div>
+      )}
+
+      {integracionSub && (
+        <Modal
+          title={`Integración — ${integracionSub.sub.nombre}`}
+          onClose={() => setIntegracionSub(null)}
+          size="lg"
+        >
+          <ModuloIntegracionPanel
+            moduloNombre={integracionSub.moduloNombre}
+            submodulo={{
+              id: integracionSub.sub.id,
+              nombre: integracionSub.sub.nombre,
+              url: integracionSub.sub.url ?? null,
+            }}
+          />
+        </Modal>
       )}
     </div>
   );
