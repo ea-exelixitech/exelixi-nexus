@@ -7,11 +7,15 @@ import {
 } from './vite-paths';
 
 /** Con Apache strip: assets relativos + base href = /admin/assets en rutas profundas. */
-function adminPublicBaseHref(mode: string, base: string): Plugin {
+function adminPublicBaseHref(
+  mode: string,
+  base: string,
+  directAccess: boolean,
+): Plugin {
   return {
     name: 'admin-public-base-href',
     transformIndexHtml(html) {
-      if (mode !== 'production' || base !== './') return html;
+      if (mode !== 'production' || base !== './' || directAccess) return html;
       if (/<base\s/i.test(html)) return html;
       return html.replace(
         '<head>',
@@ -24,6 +28,8 @@ function adminPublicBaseHref(mode: string, base: string): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const base = resolveAppBase(env, mode);
+  const directAccess =
+    env.VITE_DIRECT_ACCESS === '1' || env.VITE_DIRECT_ACCESS === 'true';
   const apiTarget = env.VITE_API_URL || 'http://127.0.0.1:3092';
 
   const proxy = prefixDevProxy(base, {
@@ -32,7 +38,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base,
-    plugins: [react(), adminPublicBaseHref(mode, base)],
+    plugins: [react(), adminPublicBaseHref(mode, base, directAccess)],
     server: {
       port: 5200,
       host: true,
