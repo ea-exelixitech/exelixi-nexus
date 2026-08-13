@@ -78,9 +78,34 @@ export const usersApi = {
   cambiarEstado: (id: string) => api.patch(`/users/${id}/status`),
   cambiarPassword: (d: any) => api.post('/users/change-password', d),
 };
+export type ConfigPanelMeta = {
+  canal?: string;
+  cproductor?: string;
+  cusuario?: string;
+  ctipocanal?: string;
+  ccanalalt_in?: string;
+  cscanalalt_in?: string;
+  cramo?: string;
+};
+
 export const configApi = {
-  generarToken: (empresaId: number, producto: string, modulo: string) =>
-    api.get(`/config/token/${empresaId}/${producto}/${modulo}`),
+  generarToken: (
+    empresaId: number,
+    producto: string,
+    modulo: string,
+    meta?: ConfigPanelMeta,
+  ) => {
+    const params = new URLSearchParams();
+    if (meta) {
+      for (const [k, v] of Object.entries(meta)) {
+        if (v != null && String(v).trim() !== '') params.set(k, String(v).trim());
+      }
+    }
+    const qs = params.toString();
+    return api.get(
+      `/config/token/${empresaId}/${producto}/${modulo}${qs ? `?${qs}` : ''}`,
+    );
+  },
 };
 export const emisionesApi = {
   trafico: (desde?: string, hasta?: string) => {

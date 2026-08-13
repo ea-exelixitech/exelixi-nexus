@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { modulesApi, configApi } from '../../api';
+import { modulesApi, configApi, type ConfigPanelMeta } from '../../api';
 import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink, Shield, FileText, LayoutList, CreditCard, Plug } from 'lucide-react';
 import { Spinner, ConfirmDialog, Modal } from '../../components/ui';
 import ModuloIntegracionPanel from '../../components/ModuloIntegracionPanel';
@@ -27,6 +27,12 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   const [loadingToken, setLoadingToken] = useState<number | null>(null);
   const [parametrizarMod, setParametrizarMod] = useState<any>(null);
   const [integracionSub, setIntegracionSub] = useState<{ moduloNombre: string; sub: any } | null>(null);
+  /** Metadata de canal que viaja en la URL/token del configurador (como SSO). */
+  const [configCanal, setConfigCanal] = useState('default');
+  const [configCproductor, setConfigCproductor] = useState('');
+  const [configCusuario, setConfigCusuario] = useState('');
+  const [configCtipocanal, setConfigCtipocanal] = useState('');
+  const [lastConfigUrl, setLastConfigUrl] = useState('');
 
   // Inline submodule edit state
   const [editSubId, setEditSubId] = useState<number | 'new' | null>(null);
@@ -49,44 +55,73 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   
   useEffect(load, []);
 
-  const abrirParametrizador = async (submodulo: any, productoName: string) => {
+  const buildConfigMeta = (): ConfigPanelMeta => {
+    const meta: ConfigPanelMeta = {
+      canal: (configCanal || 'default').trim() || 'default',
+    };
+    if (configCproductor.trim()) meta.cproductor = configCproductor.trim();
+    if (configCusuario.trim()) meta.cusuario = configCusuario.trim();
+    if (configCtipocanal.trim()) meta.ctipocanal = configCtipocanal.trim();
+    return meta;
+  };
+
+  const buildConfigUrl = async (
+    submodulo: any,
+    productoName: string,
+  ): Promise<string | null> => {
+    const nombreSub = String(submodulo.nombre || '').toLowerCase();
+    let moduloKey = 'ocr';
+    if (nombreSub.includes('formulario')) moduloKey = 'formulario';
+    else if (nombreSub.includes('emision') || nombreSub.includes('emisión')) moduloKey = 'emision';
+    else if (nombreSub.includes('pago')) moduloKey = 'pagos';
+    else if (nombreSub.includes('ocr')) moduloKey = 'ocr';
+
+    const rawProduct = String(productoName || '').toLowerCase();
+    const product = rawProduct.includes('funerar') ? 'funerario' : 'rcv';
+    const meta = buildConfigMeta();
+
+    const response = await configApi.generarToken(1, product, moduloKey, meta);
+    const token = response.data?.data?.token ?? response.data?.token;
+    if (!token) return null;
+
+    const PREFIX: Record<string, string> = {
+      ocr: '/ocr',
+      formulario: '/formulario',
+      emision: '/emision',
+      pagos: '/pagos',
+    };
+    const prefix = PREFIX[moduloKey] ?? '/ocr';
+    const url = new URL(submodulo.url, 'https://cierrelmds.exelixitech.com');
+    url.pathname = `${prefix}/config`;
+    url.search = '';
+    url.searchParams.set('product', product);
+    url.searchParams.set('token', token);
+    url.searchParams.set('canal', meta.canal || 'default');
+    if (meta.cproductor) url.searchParams.set('cproductor', meta.cproductor);
+    if (meta.cusuario) url.searchParams.set('cusuario', meta.cusuario);
+    if (meta.ctipocanal) url.searchParams.set('ctipocanal', meta.ctipocanal);
+    return url.toString();
+  };
+
+  const abrirParametrizador = async (
+    submodulo: any,
+    productoName: string,
+    mode: 'open' | 'copy' = 'open',
+  ) => {
     if (!submodulo.url) { toast('Este submódulo no tiene URL configurada', 'error'); return; }
     try {
       setLoadingToken(submodulo.id);
-
-      // Normalizar nombre de submódulo → clave config/token Nexus
-      const nombreSub = String(submodulo.nombre || '').toLowerCase();
-      let moduloKey = 'ocr';
-      if (nombreSub.includes('formulario')) moduloKey = 'formulario';
-      else if (nombreSub.includes('emision') || nombreSub.includes('emisión')) moduloKey = 'emision';
-      else if (nombreSub.includes('pago')) moduloKey = 'pagos';
-      else if (nombreSub.includes('ocr')) moduloKey = 'ocr';
-
-      // product=rcv|funerario (únicos válidos en Nexus config API)
-      const rawProduct = String(productoName || '').toLowerCase();
-      const product = rawProduct.includes('funerar') ? 'funerario' : 'rcv';
-
-      const response = await configApi.generarToken(1, product, moduloKey);
-      const token = response.data?.data?.token ?? response.data?.token;
-
-      if (token) {
-        // Prefijo Apache fijo por módulo (no confiar solo en pathname de BD:
-        // si submodulo.url es solo el dominio, acababa en /config → 404 Apache).
-        const PREFIX: Record<string, string> = {
-          ocr: '/ocr',
-          formulario: '/formulario',
-          emision: '/emision',
-          pagos: '/pagos',
-        };
-        const prefix = PREFIX[moduloKey] ?? '/ocr';
-        const url = new URL(submodulo.url, 'https://cierrelmds.exelixitech.com');
-        url.pathname = `${prefix}/config`;
-        url.search = '';
-        url.searchParams.set('product', product);
-        url.searchParams.set('token', token);
-        window.open(url.toString(), '_blank');
-      } else {
+      const href = await buildConfigUrl(submodulo, productoName);
+      if (!href) {
         toast('No se pudo generar el token de acceso', 'error');
+        return;
+      }
+      setLastConfigUrl(href);
+      if (mode === 'copy') {
+        await navigator.clipboard.writeText(href);
+        toast('URL del configurador copiada (válida 1 h)', 'success');
+      } else {
+        window.open(href, '_blank');
       }
     } catch (err: any) {
       toast(err.response?.data?.message || 'Error al generar el token de acceso', 'error');
@@ -558,7 +593,77 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
             </div>
             
             {/* Cuerpo del Modal (Grid de Tarjetas) */}
-            <div className="p-8 overflow-y-auto bg-slate-50/30">
+            <div className="p-8 overflow-y-auto bg-slate-50/30 space-y-6">
+              <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 sm:p-5 space-y-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-indigo-600">
+                    Canal / metadata (viaja en la URL)
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Estos datos se incrustan en el token y en la query del configurador
+                    (<code className="font-mono text-[11px]">?canal=&amp;cproductor=</code>),
+                    igual que el SSO del flujo. Compártela con el canal para que edite su config.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Canal *</label>
+                    <input
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                      value={configCanal}
+                      onChange={(e) => setConfigCanal(e.target.value)}
+                      placeholder="default | web-lm | app"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">cproductor</label>
+                    <input
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                      value={configCproductor}
+                      onChange={(e) => setConfigCproductor(e.target.value)}
+                      placeholder="ej: 80080"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">cusuario</label>
+                    <input
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                      value={configCusuario}
+                      onChange={(e) => setConfigCusuario(e.target.value)}
+                      placeholder="ej: 4"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">ctipocanal</label>
+                    <input
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                      value={configCtipocanal}
+                      onChange={(e) => setConfigCtipocanal(e.target.value)}
+                      placeholder="ej: E"
+                    />
+                  </div>
+                </div>
+                {lastConfigUrl && (
+                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                    <input
+                      readOnly
+                      className="flex-1 text-[11px] font-mono border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-600"
+                      value={lastConfigUrl}
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(lastConfigUrl);
+                        toast('URL copiada', 'success');
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                    >
+                      Copiar de nuevo
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {(parametrizarMod.submodulos || []).filter((s: any) => s.url && s.activo).map((sub: any) => {
                   const n = sub.nombre.toLowerCase();
@@ -614,14 +719,24 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
                         Configura las reglas de negocio, validaciones y apariencia de este submódulo.
                       </p>
                       
-                      <button
-                        disabled={loadingToken === sub.id}
-                        onClick={() => abrirParametrizador(sub, productoMod)}
-                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-sm bg-gradient-to-r ${gradient} ${shadow} hover:shadow-lg transition-all disabled:opacity-50`}
-                      >
-                        {loadingToken === sub.id ? <Spinner size={16} /> : 'Configurar Módulo'}
-                        <ExternalLink size={16} />
-                      </button>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          disabled={loadingToken === sub.id}
+                          onClick={() => abrirParametrizador(sub, productoMod, 'open')}
+                          className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-sm bg-gradient-to-r ${gradient} ${shadow} hover:shadow-lg transition-all disabled:opacity-50`}
+                        >
+                          {loadingToken === sub.id ? <Spinner size={16} /> : 'Configurar Módulo'}
+                          <ExternalLink size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={loadingToken === sub.id}
+                          onClick={() => abrirParametrizador(sub, productoMod, 'copy')}
+                          className="w-full py-2 rounded-xl text-xs font-bold border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white disabled:opacity-50"
+                        >
+                          Copiar URL para el canal
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
