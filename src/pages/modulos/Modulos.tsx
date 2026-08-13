@@ -33,6 +33,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   const [configCusuario, setConfigCusuario] = useState('');
   const [configCtipocanal, setConfigCtipocanal] = useState('');
   const [lastConfigUrl, setLastConfigUrl] = useState('');
+  const [showUrlAvanzado, setShowUrlAvanzado] = useState(false);
   /** Empresa Nexus (como RCV): la config/preguntas se guardan por empresaId. */
   const [empresas, setEmpresas] = useState<any[]>([]);
   const [configEmpresaId, setConfigEmpresaId] = useState(1);
@@ -616,67 +617,84 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
               <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 sm:p-5 space-y-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-600">
-                    Empresa + canal (viajan en la URL)
+                    ¿Quién configura? → Empresa
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Como en RCV: la config se guarda por <strong>empresa</strong> de Nexus.
-                    El canal es opcional (<code className="font-mono text-[11px]">default</code> si no aplica).
-                    El SSO del flujo debe usar la misma empresa (JWT) y, si hay canal, el mismo <code className="font-mono text-[11px]">metadata.canal</code>.
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    En el <strong>flujo</strong> (como RCV) no hay que adivinar nada: el SSO manda
+                    <code className="font-mono text-[11px] mx-0.5">empresaId</code> en el JWT y, si aplica,
+                    <code className="font-mono text-[11px] mx-0.5">metadata.canal</code> — la API carga esa config sola.
+                    Aquí solo eliges la <strong>empresa</strong> para abrir/editar su parametrizador
+                    (preguntas en canal <code className="font-mono text-[11px]">default</code> si el SSO no manda canal).
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                  <div className="sm:col-span-2 lg:col-span-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Empresa *</label>
-                    <select
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
-                      value={configEmpresaId}
-                      onChange={(e) => setConfigEmpresaId(Number(e.target.value) || 1)}
-                    >
-                      {empresas.length === 0 && <option value={1}>Empresa 1</option>}
-                      {empresas.map((e: any) => (
-                        <option key={e.id} value={e.id}>
-                          {e.id} · {e.nombre || e.name || 'Sin nombre'}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Canal</label>
-                    <input
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
-                      value={configCanal}
-                      onChange={(e) => setConfigCanal(e.target.value)}
-                      placeholder="default | web-lm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">cproductor</label>
-                    <input
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
-                      value={configCproductor}
-                      onChange={(e) => setConfigCproductor(e.target.value)}
-                      placeholder="ej: 80080"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">cusuario</label>
-                    <input
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
-                      value={configCusuario}
-                      onChange={(e) => setConfigCusuario(e.target.value)}
-                      placeholder="ej: 4"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">ctipocanal</label>
-                    <input
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
-                      value={configCtipocanal}
-                      onChange={(e) => setConfigCtipocanal(e.target.value)}
-                      placeholder="ej: E"
-                    />
-                  </div>
+                <div className="max-w-md">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Empresa *</label>
+                  <select
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                    value={configEmpresaId}
+                    onChange={(e) => setConfigEmpresaId(Number(e.target.value) || 1)}
+                  >
+                    {empresas.length === 0 && <option value={1}>Empresa 1</option>}
+                    {empresas.map((e: any) => (
+                      <option key={e.id} value={e.id}>
+                        {e.id} · {e.nombre || e.name || 'Sin nombre'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowUrlAvanzado((v) => !v)}
+                  className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800"
+                >
+                  {showUrlAvanzado ? 'Ocultar' : 'Mostrar'} enlace avanzado (canal fijo para un integrador)
+                </button>
+                {showUrlAvanzado && (
+                  <div className="rounded-xl border border-dashed border-indigo-200 bg-white/70 p-3 space-y-2">
+                    <p className="text-[11px] text-slate-500">
+                      Solo si vas a <strong>regalar una URL</strong> a un integrador con canal ya conocido.
+                      Si no, déjalo en <code className="font-mono">default</code>: en runtime el SSO decide el canal.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Canal</label>
+                        <input
+                          className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                          value={configCanal}
+                          onChange={(e) => setConfigCanal(e.target.value)}
+                          placeholder="default"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">cproductor</label>
+                        <input
+                          className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                          value={configCproductor}
+                          onChange={(e) => setConfigCproductor(e.target.value)}
+                          placeholder="opcional"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">cusuario</label>
+                        <input
+                          className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                          value={configCusuario}
+                          onChange={(e) => setConfigCusuario(e.target.value)}
+                          placeholder="opcional"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">ctipocanal</label>
+                        <input
+                          className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                          value={configCtipocanal}
+                          onChange={(e) => setConfigCtipocanal(e.target.value)}
+                          placeholder="opcional"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {lastConfigUrl && (
                   <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                     <input
