@@ -80,6 +80,7 @@ export const usersApi = {
 };
 export type ConfigPanelMeta = {
   canal?: string;
+  empresaNombre?: string;
   cproductor?: string;
   cusuario?: string;
   ctipocanal?: string;

@@ -99,8 +99,18 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
     const meta = buildConfigMeta();
 
     const empresaId = Number(configEmpresaId) > 0 ? Number(configEmpresaId) : 1;
-    const response = await configApi.generarToken(empresaId, product, moduloKey, meta);
+    const empRow = empresas.find((e: any) => Number(e.id) === empresaId);
+    const empresaNombreLocal =
+      String(empRow?.nombre || empRow?.name || '').trim() || `Empresa ${empresaId}`;
+    const response = await configApi.generarToken(empresaId, product, moduloKey, {
+      ...meta,
+      empresaNombre: empresaNombreLocal,
+    });
     const token = response.data?.data?.token ?? response.data?.token;
+    const nombreFromApi =
+      response.data?.data?.empresaNombre ?? response.data?.empresaNombre;
+    const nombreFinal =
+      String(nombreFromApi || empresaNombreLocal || '').trim() || `Empresa ${empresaId}`;
     if (!token) return null;
 
     const PREFIX: Record<string, string> = {
@@ -116,6 +126,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
     url.searchParams.set('product', product);
     url.searchParams.set('token', token);
     url.searchParams.set('empresaId', String(empresaId));
+    url.searchParams.set('empresaNombre', nombreFinal);
     url.searchParams.set('canal', meta.canal || 'default');
     if (meta.cproductor) url.searchParams.set('cproductor', meta.cproductor);
     if (meta.cusuario) url.searchParams.set('cusuario', meta.cusuario);
