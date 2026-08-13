@@ -70,10 +70,18 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
       const token = response.data?.data?.token ?? response.data?.token;
 
       if (token) {
-        // Conservar prefijo Apache del submódulo: /ocr/config, /formulario/config, …
-        const url = new URL(submodulo.url);
-        const basePath = url.pathname.replace(/\/+$/, '') || '';
-        url.pathname = `${basePath}/config`;
+        // Prefijo Apache fijo por módulo (no confiar solo en pathname de BD:
+        // si submodulo.url es solo el dominio, acababa en /config → 404 Apache).
+        const PREFIX: Record<string, string> = {
+          ocr: '/ocr',
+          formulario: '/formulario',
+          emision: '/emision',
+          pagos: '/pagos',
+        };
+        const prefix = PREFIX[moduloKey] ?? '/ocr';
+        const url = new URL(submodulo.url, 'https://cierrelmds.exelixitech.com');
+        url.pathname = `${prefix}/config`;
+        url.search = '';
         url.searchParams.set('product', product);
         url.searchParams.set('token', token);
         window.open(url.toString(), '_blank');
