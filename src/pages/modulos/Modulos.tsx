@@ -53,21 +53,28 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
     if (!submodulo.url) { toast('Este submódulo no tiene URL configurada', 'error'); return; }
     try {
       setLoadingToken(submodulo.id);
-      
-      // Normalizar nombre de submódulo
-      const nombreSub = submodulo.nombre.toLowerCase();
+
+      // Normalizar nombre de submódulo → clave config/token Nexus
+      const nombreSub = String(submodulo.nombre || '').toLowerCase();
       let moduloKey = 'ocr';
       if (nombreSub.includes('formulario')) moduloKey = 'formulario';
+      else if (nombreSub.includes('emision') || nombreSub.includes('emisión')) moduloKey = 'emision';
       else if (nombreSub.includes('pago')) moduloKey = 'pagos';
       else if (nombreSub.includes('ocr')) moduloKey = 'ocr';
 
-      const response = await configApi.generarToken(1, productoName.toLowerCase(), moduloKey);
+      // product=rcv|funerario (únicos válidos en Nexus config API)
+      const rawProduct = String(productoName || '').toLowerCase();
+      const product = rawProduct.includes('funerar') ? 'funerario' : 'rcv';
+
+      const response = await configApi.generarToken(1, product, moduloKey);
       const token = response.data?.data?.token ?? response.data?.token;
-      
+
       if (token) {
+        // Conservar prefijo Apache del submódulo: /ocr/config, /formulario/config, …
         const url = new URL(submodulo.url);
-        url.pathname = '/config';
-        url.searchParams.set('product', productoName.toLowerCase());
+        const basePath = url.pathname.replace(/\/+$/, '') || '';
+        url.pathname = `${basePath}/config`;
+        url.searchParams.set('product', product);
         url.searchParams.set('token', token);
         window.open(url.toString(), '_blank');
       } else {
