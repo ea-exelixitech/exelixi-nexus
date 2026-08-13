@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { modulesApi, configApi, type ConfigPanelMeta } from '../../api';
+import { modulesApi, configApi, companiesApi, type ConfigPanelMeta } from '../../api';
 import { Plus, RefreshCw, Power, Pencil, X as XIcon, Settings2, ExternalLink, Shield, FileText, LayoutList, CreditCard, Plug } from 'lucide-react';
 import { Spinner, ConfirmDialog, Modal } from '../../components/ui';
 import ModuloIntegracionPanel from '../../components/ModuloIntegracionPanel';
@@ -33,6 +33,9 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
   const [configCusuario, setConfigCusuario] = useState('');
   const [configCtipocanal, setConfigCtipocanal] = useState('');
   const [lastConfigUrl, setLastConfigUrl] = useState('');
+  /** Empresa Nexus (como RCV): la config/preguntas se guardan por empresaId. */
+  const [empresas, setEmpresas] = useState<any[]>([]);
+  const [configEmpresaId, setConfigEmpresaId] = useState(1);
 
   // Inline submodule edit state
   const [editSubId, setEditSubId] = useState<number | 'new' | null>(null);
@@ -52,8 +55,22 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
       .catch(() => setMods([]))
       .finally(() => setLoading(false)); 
   };
+
+  const loadEmpresas = () => {
+    companiesApi.listar()
+      .then((r) => {
+        const data = r.data?.data || r.data || [];
+        const list = Array.isArray(data) ? data : [];
+        setEmpresas(list);
+        if (list.length > 0 && !list.some((e: any) => Number(e.id) === configEmpresaId)) {
+          setConfigEmpresaId(Number(list[0].id) || 1);
+        }
+      })
+      .catch(() => setEmpresas([]));
+  };
   
   useEffect(load, []);
+  useEffect(loadEmpresas, []);
 
   const buildConfigMeta = (): ConfigPanelMeta => {
     const meta: ConfigPanelMeta = {
@@ -80,7 +97,8 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
     const product = rawProduct.includes('funerar') ? 'funerario' : 'rcv';
     const meta = buildConfigMeta();
 
-    const response = await configApi.generarToken(1, product, moduloKey, meta);
+    const empresaId = Number(configEmpresaId) > 0 ? Number(configEmpresaId) : 1;
+    const response = await configApi.generarToken(empresaId, product, moduloKey, meta);
     const token = response.data?.data?.token ?? response.data?.token;
     if (!token) return null;
 
@@ -96,6 +114,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
     url.search = '';
     url.searchParams.set('product', product);
     url.searchParams.set('token', token);
+    url.searchParams.set('empresaId', String(empresaId));
     url.searchParams.set('canal', meta.canal || 'default');
     if (meta.cproductor) url.searchParams.set('cproductor', meta.cproductor);
     if (meta.cusuario) url.searchParams.set('cusuario', meta.cusuario);
@@ -597,22 +616,37 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
               <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 sm:p-5 space-y-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-600">
-                    Canal / metadata (viaja en la URL)
+                    Empresa + canal (viajan en la URL)
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    Estos datos se incrustan en el token y en la query del configurador
-                    (<code className="font-mono text-[11px]">?canal=&amp;cproductor=</code>),
-                    igual que el SSO del flujo. Compártela con el canal para que edite su config.
+                    Como en RCV: la config se guarda por <strong>empresa</strong> de Nexus.
+                    El canal es opcional (<code className="font-mono text-[11px]">default</code> si no aplica).
+                    El SSO del flujo debe usar la misma empresa (JWT) y, si hay canal, el mismo <code className="font-mono text-[11px]">metadata.canal</code>.
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Empresa *</label>
+                    <select
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                      value={configEmpresaId}
+                      onChange={(e) => setConfigEmpresaId(Number(e.target.value) || 1)}
+                    >
+                      {empresas.length === 0 && <option value={1}>Empresa 1</option>}
+                      {empresas.map((e: any) => (
+                        <option key={e.id} value={e.id}>
+                          {e.id} · {e.nombre || e.name || 'Sin nombre'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Canal *</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Canal</label>
                     <input
                       className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
                       value={configCanal}
                       onChange={(e) => setConfigCanal(e.target.value)}
-                      placeholder="default | web-lm | app"
+                      placeholder="default | web-lm"
                     />
                   </div>
                   <div>
