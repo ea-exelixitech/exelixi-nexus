@@ -120,7 +120,7 @@ export default function Modulos({ toast }: { toast: (m: string, t: 'success' | '
       pagos: '/pagos',
     };
     const prefix = PREFIX[moduloKey] ?? '/ocr';
-    const url = new URL(submodulo.url, 'https://cierrelmds.exelixitech.com');
+    const url = new URL(submodulo.url, window.location.origin);
     url.pathname = `${prefix}/config`;
     url.search = '';
     url.searchParams.set('product', product);
