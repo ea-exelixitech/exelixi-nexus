@@ -27,9 +27,34 @@ function normalizedBase(): string {
   return base.replace(/\/?$/, '/');
 }
 
+const GCIA_NEXUS_API = 'https://nexus-api.exelixitech.com';
+
+/**
+ * Base URL de nexus-api para axios.
+ * - GCIA producción (nexus.exelixitech.com): subdominio API absoluto.
+ * - QA/cierrelmds con VITE_DIRECT_ACCESS + VITE_API_URL: URL absoluta del build.
+ * - Legacy Apache /admin/: proxy relativo `/admin/api` vía vite preview.
+ */
+function resolveApiBaseUrl(): string {
+  const configured = (import.meta.env.VITE_API_URL as string | undefined)?.trim().replace(/\/$/, '');
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname.toLowerCase();
+    if (host === 'nexus.exelixitech.com') {
+      return configured || GCIA_NEXUS_API;
+    }
+  }
+
+  if (isDirectDeploy() && configured) {
+    return configured;
+  }
+
+  return `${normalizedBase()}api`;
+}
+
 /** Base URL del admin (Vite `base`). Ej. `/admin/` → API en `/admin/api`. */
 export function moduleApiBase(): string {
-  return `${normalizedBase()}api`;
+  return resolveApiBaseUrl();
 }
 
 /** basename para react-router (sin barra final). Nunca `./` ni `/.`. */
